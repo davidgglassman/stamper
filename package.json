@@ -1,0 +1,22 @@
+{
+  "name": "stamper",
+  "description": "CLI for scaffolding projects from templates",
+  "version": "1.0.0",
+  "author": "David Glassman",
+  "license": "MIT",
+  "type": "module",
+  "packageManager": "pnpm@10.12.4",
+  "bin": {
+    "stamper": "./bin/index.js"
+  },
+  "scripts": {
+    "serve": "node ./bin/index.js"
+  },
+  "dependencies": {
+    "chalk": "^5.4.1",
+    "commander": "^14.0.0",
+    "figlet": "^1.8.2",
+    "inquirer": "^12.7.0",
+    "ora": "^8.2.0"
+  }
+}
