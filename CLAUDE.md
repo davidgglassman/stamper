@@ -207,9 +207,9 @@ stamper/
 
 #### Phase 4B: Question System
 - [x] Implement questions.ts - convert YAML to inquirer prompts
-- [x] Support basic question types (input, confirm)
-- [x] Collect user answers
-- [x] **Test Goal**: Questions are asked based on template config
+- [x] Support ALL 7 question types (input, confirm, select, checkbox, password, number, rawlist)
+- [x] Collect user answers with proper validation
+- [x] **Test Goal**: All question types work correctly
 
 #### Phase 4C: Nunjucks Integration
 - [x] Add Nunjucks rendering to scaffolding process
@@ -221,12 +221,21 @@ stamper/
 - [x] Add progress indicators with ora during git operations
 - [x] Improve error messages and validation
 - [x] Success messaging with next steps
-- [x] **Test Goal**: Professional user experience
+- [x] Add figlet ASCII art welcome screen
+- [x] **Test Goal**: Professional user experience with branding
 
 #### Phase 5B: Git Repository Initialization
 - [x] Add post-scaffold git init option
 - [x] Prompt user for repository initialization
 - [x] **Test Goal**: Complete workflow including optional git setup
+
+#### Phase 6: NPM Package & Publishing
+- [x] Configure package as `stamper-cli` for npm publishing
+- [x] Set up npx workflow (shows help menu when run without args)
+- [x] Create comprehensive documentation (README, PUBLISHING.md, TESTING.md)
+- [x] Set up yalc for local development and testing
+- [x] Successfully published to npm registry
+- [x] **Test Goal**: `npx stamper-cli` works from anywhere
 
 ## Development Guidelines
 
@@ -246,12 +255,14 @@ Each sub-phase must be fully functional and testable:
 
 ### Dependencies
 - `commander`: CLI command structure
-- `@inquirer/prompts`: Interactive user prompts
+- `@inquirer/prompts`: Interactive user prompts (7 question types supported)
 - `nunjucks`: Template processing
 - `simple-git`: Git operations
 - `conf`: User configuration management
 - `js-yaml`: YAML parsing for stamper.yaml
 - `ora`: Progress indicators
+- `figlet`: ASCII art for welcome screen
+- `chalk`: Terminal colors (used by prompts)
 - `typescript`: TypeScript compilation
 - `eslint`: Code linting
 - `prettier`: Code formatting
@@ -272,3 +283,29 @@ Each sub-phase must be fully functional and testable:
 ### Memory of Best Practices
 - At the end of each phase when you are testing the Test Goal, also tell me the steps I would take to test on my own. I want to independently validate everything is working.
 - **Update Help Documentation**: Always update the help documentation for a command whenever it has new or updated flags/options
+
+## Current Status (v1.0.2)
+
+### Published Package
+- **Package Name**: `stamper-cli` (published on npm)
+- **Current Version**: 1.0.2
+- **Usage**: `npx stamper-cli` (shows ASCII art + help menu)
+- **Commands**: create, add, list, remove, setup, org
+
+### Key Features Implemented
+- ASCII art welcome screen using figlet
+- Dual template system (organization + user templates)
+- All 7 inquirer question types supported
+- Nunjucks template processing with variables and logic
+- Git repository initialization
+- Progress indicators and professional UX
+- Comprehensive error handling
+
+### Development Workflow
+- **Local Testing**: Use yalc (`npm run build && yalc publish`)
+- **Publishing**: `npm version patch && npm publish`
+- **Documentation**: README.md, PUBLISHING.md, TESTING.md all complete
+- **CLI Behavior**: Shows help when run without args, auto-runs commands when specified
+
+### Template Structure
+Templates require `stamper.yaml` with questions array, `.njk` files are processed with Nunjucks, other files copied as-is.
