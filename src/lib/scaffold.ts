@@ -1,12 +1,14 @@
 import nunjucks from 'nunjucks';
 import { resolve } from 'path';
 import { readdir, readFile, writeFile, mkdir, stat } from 'fs/promises';
+import { Ora } from 'ora';
 import type { AnswerMap } from './questions.js';
 
 export interface ScaffoldOptions {
   sourceDir: string;
   outputDir: string;
   variables: AnswerMap;
+  progressSpinner?: Ora;
 }
 
 const isNunjucksFile = (filename: string): boolean => {
@@ -21,12 +23,17 @@ const getOutputFilename = (filename: string): string => {
   return filename;
 };
 
-const processTemplate = (content: string, variables: AnswerMap): string => {
-  // Configure Nunjucks environment
-  const env = new nunjucks.Environment();
-  
-  // Render the template with variables
-  return env.renderString(content, variables);
+const processTemplate = (content: string, variables: AnswerMap, filename?: string): string => {
+  try {
+    // Configure Nunjucks environment
+    const env = new nunjucks.Environment();
+    
+    // Render the template with variables
+    return env.renderString(content, variables);
+  } catch (error) {
+    const fileInfo = filename ? ` in ${filename}` : '';
+    throw new Error(`Template processing failed${fileInfo}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 };
 
 const copyFile = async (sourcePath: string, destPath: string): Promise<void> => {
@@ -37,11 +44,16 @@ const copyFile = async (sourcePath: string, destPath: string): Promise<void> => 
 const processFile = async (
   sourcePath: string,
   destPath: string,
-  variables: AnswerMap
+  variables: AnswerMap,
+  filename?: string
 ): Promise<void> => {
-  const content = await readFile(sourcePath, 'utf-8');
-  const processedContent = processTemplate(content, variables);
-  await writeFile(destPath, processedContent, 'utf-8');
+  try {
+    const content = await readFile(sourcePath, 'utf-8');
+    const processedContent = processTemplate(content, variables, filename);
+    await writeFile(destPath, processedContent, 'utf-8');
+  } catch (error) {
+    throw new Error(`Failed to process file ${filename || sourcePath}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 };
 
 const ensureDirectoryExists = async (dirPath: string): Promise<void> => {
@@ -57,18 +69,25 @@ const ensureDirectoryExists = async (dirPath: string): Promise<void> => {
 const scaffoldDirectory = async (
   sourceDir: string,
   outputDir: string,
-  variables: AnswerMap
+  variables: AnswerMap,
+  progressSpinner?: Ora,
+  relativePath = ''
 ): Promise<void> => {
   const entries = await readdir(sourceDir, { withFileTypes: true });
 
   for (const entry of entries) {
     const sourcePath = resolve(sourceDir, entry.name);
+    const currentPath = relativePath ? `${relativePath}/${entry.name}` : entry.name;
+    
+    if (progressSpinner) {
+      progressSpinner.text = `Processing ${currentPath}...`;
+    }
     
     if (entry.isDirectory()) {
       // Handle subdirectories recursively
       const outputSubDir = resolve(outputDir, entry.name);
       await ensureDirectoryExists(outputSubDir);
-      await scaffoldDirectory(sourcePath, outputSubDir, variables);
+      await scaffoldDirectory(sourcePath, outputSubDir, variables, progressSpinner, currentPath);
     } else if (entry.isFile()) {
       // Handle files
       const outputFilename = getOutputFilename(entry.name);
@@ -76,7 +95,7 @@ const scaffoldDirectory = async (
       
       if (isNunjucksFile(entry.name)) {
         // Process Nunjucks template
-        await processFile(sourcePath, destPath, variables);
+        await processFile(sourcePath, destPath, variables, entry.name);
       } else {
         // Copy file as-is
         await copyFile(sourcePath, destPath);
@@ -86,23 +105,46 @@ const scaffoldDirectory = async (
 };
 
 export const scaffoldTemplate = async (options: ScaffoldOptions): Promise<void> => {
-  const { sourceDir, outputDir, variables } = options;
+  const { sourceDir, outputDir, variables, progressSpinner } = options;
 
-  // Verify source directory exists
   try {
-    const sourceStat = await stat(sourceDir);
-    if (!sourceStat.isDirectory()) {
-      throw new Error(`Source path is not a directory: ${sourceDir}`);
+    if (progressSpinner) {
+      progressSpinner.text = 'Validating source directory...';
     }
-  } catch {
-    throw new Error(`Source directory not found: ${sourceDir}`);
+    
+    // Verify source directory exists
+    try {
+      const sourceStat = await stat(sourceDir);
+      if (!sourceStat.isDirectory()) {
+        throw new Error(`Source path is not a directory: ${sourceDir}`);
+      }
+    } catch {
+      throw new Error(`Source directory not found: ${sourceDir}\nPlease check that the template was cloned correctly.`);
+    }
+
+    if (progressSpinner) {
+      progressSpinner.text = 'Creating output directory...';
+    }
+    
+    // Ensure output directory exists
+    await ensureDirectoryExists(outputDir);
+
+    if (progressSpinner) {
+      progressSpinner.text = 'Starting template processing...';
+    }
+    
+    // Start scaffolding
+    await scaffoldDirectory(sourceDir, outputDir, variables, progressSpinner);
+    
+    if (progressSpinner) {
+      progressSpinner.text = 'Template processing completed';
+    }
+  } catch (error) {
+    if (progressSpinner) {
+      progressSpinner.fail('Template processing failed');
+    }
+    throw error;
   }
-
-  // Ensure output directory exists
-  await ensureDirectoryExists(outputDir);
-
-  // Start scaffolding
-  await scaffoldDirectory(sourceDir, outputDir, variables);
 };
 
 export const getTemplateFiles = async (sourceDir: string): Promise<string[]> => {
