@@ -96,6 +96,78 @@ export class GitManager {
   }
 
   /**
+   * Initializes a git repository in the specified directory
+   */
+  async initializeRepository(projectDir: string, progressSpinner?: Ora): Promise<void> {
+    try {
+      if (progressSpinner) {
+        progressSpinner.text = 'Initializing git repository...';
+      }
+
+      // Create a new simple-git instance for the project directory
+      const projectGit = simpleGit(projectDir);
+      
+      // Initialize the repository
+      await projectGit.init();
+
+      if (progressSpinner) {
+        progressSpinner.text = 'Creating initial commit...';
+      }
+
+      // Add all files to staging
+      await projectGit.add('.');
+
+      // Create initial commit
+      await projectGit.commit('Initial commit - project scaffolded with Stamper');
+
+      if (progressSpinner) {
+        progressSpinner.text = 'Git repository initialized successfully';
+      }
+
+    } catch (error) {
+      if (progressSpinner) {
+        progressSpinner.fail('Failed to initialize git repository');
+      }
+      
+      if (error instanceof Error) {
+        if (error.message.includes('not found') || error.message.includes('git: command not found')) {
+          throw new Error('Git is not installed or not available in PATH.\nPlease install Git to use repository initialization.');
+        }
+        if (error.message.includes('already exists') || error.message.includes('already a git repository')) {
+          throw new Error('Directory is already a git repository.\nSkipping git initialization.');
+        }
+      }
+      
+      throw new Error(`Failed to initialize git repository: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Checks if git is available on the system
+   */
+  async isGitAvailable(): Promise<boolean> {
+    try {
+      await this.git.raw(['--version']);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Checks if a directory is already a git repository
+   */
+  async isGitRepository(projectDir: string): Promise<boolean> {
+    try {
+      const projectGit = simpleGit(projectDir);
+      await projectGit.status();
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
    * Shortens a URL for display purposes
    */
   private shortenUrl(url: string): string {

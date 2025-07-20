@@ -1,4 +1,4 @@
-import { select, input } from '@inquirer/prompts';
+import { select, input, confirm } from '@inquirer/prompts';
 import { getAllTemplates, getTemplate } from '../lib/config.js';
 import { GitManager } from '../lib/git.js';
 import { askQuestions, parseTemplateConfig, type AnswerMap } from '../lib/questions.js';
@@ -172,6 +172,46 @@ export const createCommand = async (options: { outputDir?: string }) => {
         }
       }
       
+      // Git repository initialization prompt
+      let gitInitialized = false;
+      const gitAvailable = await gitManager.isGitAvailable();
+      const isAlreadyGitRepo = await gitManager.isGitRepository(resolvedOutputDir);
+      
+      if (gitAvailable && !isAlreadyGitRepo) {
+        console.log('');
+        console.log(chalk.blue('🔧 Git Repository Setup'));
+        
+        const shouldInitGit = await confirm({
+          message: 'Initialize a git repository for this project?',
+          default: true,
+        });
+        
+        if (shouldInitGit) {
+          const gitSpinner = ora('Setting up git repository...').start();
+          try {
+            await gitManager.initializeRepository(resolvedOutputDir, gitSpinner);
+            gitSpinner.succeed('Git repository initialized with initial commit');
+            gitInitialized = true;
+          } catch (error) {
+            // gitSpinner.fail called inside initializeRepository
+            console.log(chalk.yellow('⚠️  Git initialization skipped'));
+            if (error instanceof Error) {
+              console.log(`   ${error.message.split('\n')[0]}`);
+            }
+          }
+        } else {
+          console.log(chalk.gray('   Git initialization skipped by user'));
+        }
+      } else if (!gitAvailable) {
+        console.log('');
+        console.log(chalk.yellow('⚠️  Git not available - repository initialization skipped'));
+        console.log('   Install Git to enable automatic repository setup');
+      } else if (isAlreadyGitRepo) {
+        console.log('');
+        console.log(chalk.blue('ℹ️  Directory is already a git repository'));
+        gitInitialized = true; // Consider it as initialized
+      }
+      
       // Enhanced success messaging with next steps
       console.log('');
       console.log(chalk.green.bold('🎉 Project created successfully!'));
@@ -192,6 +232,9 @@ export const createCommand = async (options: { outputDir?: string }) => {
       console.log('   • Variables applied to templates');
       console.log('   • Project files generated');
       console.log('   • Development environment ready');
+      if (gitInitialized) {
+        console.log('   • Git repository initialized with initial commit');
+      }
       
       console.log('');
       console.log(chalk.blue('🚀 Next steps:'));
@@ -222,6 +265,21 @@ export const createCommand = async (options: { outputDir?: string }) => {
         console.log(chalk.yellow('⚠️  Environment setup required:'));
         console.log(`   • Copy ${chalk.bold('.env.example')} to ${chalk.bold('.env')}`);
         console.log('   • Configure your environment variables');
+      }
+      
+      // Git-related next steps
+      if (gitInitialized) {
+        console.log('');
+        console.log(chalk.blue('📦 Git repository ready:'));
+        console.log(`   • Initial commit created`);
+        console.log(`   • Add remote: ${chalk.bold('git remote add origin <your-repo-url>')}`);
+        console.log(`   • Push to remote: ${chalk.bold('git push -u origin main')}`);
+      } else if (gitAvailable && !isAlreadyGitRepo) {
+        console.log('');
+        console.log(chalk.gray('💡 To initialize git later:'));
+        console.log(`   • ${chalk.bold('git init')}`);
+        console.log(`   • ${chalk.bold('git add .')}`);
+        console.log(`   • ${chalk.bold('git commit -m "Initial commit"')}`);
       }
       
       console.log('');
