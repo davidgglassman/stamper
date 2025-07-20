@@ -104,11 +104,11 @@ stamper/
 ### 🚧 Current Phase: Setup & Infrastructure
 
 #### Phase 1A: Basic CLI Structure
-- [ ] Add dependencies (simple-git, conf, js-yaml, commander)
-- [ ] Add TypeScript, ESLint, Prettier setup
-- [ ] Replace bin/index.js with Commander.js structure
-- [ ] Create basic command files with placeholder implementations
-- [ ] **Test Goal**: `stamper --help` shows all commands
+- [x] Add dependencies (simple-git, conf, js-yaml, commander)
+- [x] Add TypeScript, ESLint, Prettier setup
+- [x] Replace bin/index.js with Commander.js structure
+- [x] Create basic command files with placeholder implementations
+- [x] **Test Goal**: `stamper --help` shows all commands
 
 #### Phase 1B: Configuration System
 - [ ] Implement config.ts using conf package
@@ -207,3 +207,8 @@ Each sub-phase must be fully functional and testable:
 - Keep code comments to a minimum except in the beginning of complex or non-obvious logic blocks
 - Use arrow notation for functions wherever possible
 - Break functionality into smaller, manageable chunks / functions. Each function should not do too many things on its own.
+
+## Development Guidance
+
+### Memory of Best Practices
+- At the end of each phase when you are testing the Test Goal, also tell me the steps I would take to test on my own. I want to independently validate everything is working.
