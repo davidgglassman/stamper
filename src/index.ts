@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
+import figlet from 'figlet';
 import { createCommand } from './commands/create.js';
 import { addCommand } from './commands/add.js';
 import { listCommand } from './commands/list.js';
@@ -98,19 +99,24 @@ Examples:
 
 // Handle different execution modes
 if (process.argv.length === 2) {
-  // User ran 'npx stamper-cli' or 'stamper-cli' with no arguments - automatically run create
+  // User ran 'npx stamper-cli' or 'stamper-cli' with no arguments - show welcome and help
+  console.log(figlet.textSync('STAMPER', {
+    font: 'Big',
+    horizontalLayout: 'default',
+    verticalLayout: 'default'
+  }));
   console.log('🚀 Welcome to Stamper CLI!');
   console.log('');
   
   // Check if setup is needed
   if (!setupCompleted) {
     console.log('🔧 First-time setup detected...');
-    console.log('💡 You can run "stamper-cli setup" later to configure organization templates.');
+    console.log('💡 You can run "stamper-cli setup" to configure organization templates.');
     console.log('');
   }
   
-  // Automatically run create command
-  createCommand({});
+  // Show help to let user choose what to do
+  program.outputHelp();
 } else {
   // Normal CLI usage with specific commands
   program.parse();

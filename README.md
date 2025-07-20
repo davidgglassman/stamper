@@ -4,17 +4,23 @@ A powerful CLI tool for scaffolding projects from Nunjucks templates with intera
 
 ## Quick Start
 
-Create a new project instantly:
+Get started with Stamper CLI:
 
 ```bash
 npx stamper-cli
 ```
 
-Or install globally and use anywhere:
+This will show you all available commands. To create a project:
+
+```bash
+npx stamper-cli create
+```
+
+Or install globally:
 
 ```bash
 npm install -g stamper-cli
-stamper-cli
+stamper-cli create
 ```
 
 ## Features
