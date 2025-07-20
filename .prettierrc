@@ -4,5 +4,8 @@
   "singleQuote": true,
   "printWidth": 100,
   "tabWidth": 2,
-  "useTabs": false
+  "useTabs": false,
+  "arrowParens": "always",
+  "singleAttributePerLine": true,
+  "bracketSameLine": false
 }

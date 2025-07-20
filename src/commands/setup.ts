@@ -1,10 +1,15 @@
-import { input, confirm } from '@inquirer/prompts';
-import { setOrganizationRepoUrl, markSetupCompleted, fetchOrganizationManifest, validateGitHubRepoUrl } from '../lib/config.js';
+import { confirm, input } from '@inquirer/prompts';
+import {
+  fetchOrganizationManifest,
+  markSetupCompleted,
+  setOrganizationRepoUrl,
+  validateGitHubRepoUrl,
+} from '../lib/config.js';
 
 export const setupCommand = async () => {
   console.log('🚀 Welcome to Stamper!');
   console.log('');
-  console.log('Let\'s set up your template configuration.');
+  console.log("Let's set up your template configuration.");
   console.log('');
 
   // Ask about organization templates
@@ -25,7 +30,7 @@ export const setupCommand = async () => {
 
     do {
       repoUrl = await input({
-        message: 'Enter your organization\'s template repository URL:',
+        message: "Enter your organization's template repository URL:",
         validate: (url: string) => {
           if (!url.trim()) {
             return 'URL cannot be empty';
@@ -55,18 +60,20 @@ export const setupCommand = async () => {
         urlValid = true;
       } else {
         console.log('❌ Could not find manifest.yaml in this repository');
-        console.log('   Make sure the repository contains a manifest.yaml file in the root directory');
+        console.log(
+          '   Make sure the repository contains a manifest.yaml file in the root directory'
+        );
         const retry = await confirm({
           message: 'Would you like to try a different repository?',
           default: true,
         });
-        
+
         if (!retry) {
           const continueWithoutOrg = await confirm({
             message: 'Continue setup without organization templates?',
             default: true,
           });
-          
+
           if (continueWithoutOrg) {
             setOrganizationRepoUrl(undefined);
             urlValid = true;

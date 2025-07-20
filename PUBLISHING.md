@@ -3,12 +3,16 @@
 This comprehensive guide covers the entire lifecycle of publishing and maintaining the Stamper CLI npm package.
 
 ## Table of Contents
-- [Initial Setup & Publishing](#initial-setup--publishing)
-- [Local Development with Yalc](#local-development-with-yalc)
-- [Publishing Updates](#publishing-updates)
-- [Version Management](#version-management)
-- [Testing Before Publishing](#testing-before-publishing)
-- [Troubleshooting](#troubleshooting)
+1. [Complete Publishing \& Maintenance Guide for Stamper CLI](#complete-publishing--maintenance-guide-for-stamper-cli)
+	1. [Table of Contents](#table-of-contents)
+	2. [Initial Setup \& Publishing](#initial-setup--publishing)
+	3. [Local Development with Yalc](#local-development-with-yalc)
+	4. [Publishing Updates](#publishing-updates)
+	5. [Version Management](#version-management)
+	6. [Testing Before Publishing](#testing-before-publishing)
+	7. [Troubleshooting](#troubleshooting)
+	8. [Maintenance Schedule](#maintenance-schedule)
+	9. [Quick Reference Commands](#quick-reference-commands)
 
 ## Initial Setup & Publishing
 

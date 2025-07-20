@@ -1,7 +1,7 @@
+import { mkdir, readdir, readFile, stat, writeFile } from 'fs/promises';
 import nunjucks from 'nunjucks';
-import { resolve } from 'path';
-import { readdir, readFile, writeFile, mkdir, stat } from 'fs/promises';
 import { Ora } from 'ora';
+import { resolve } from 'path';
 import type { AnswerMap } from './questions.js';
 
 export interface ScaffoldOptions {
@@ -27,12 +27,14 @@ const processTemplate = (content: string, variables: AnswerMap, filename?: strin
   try {
     // Configure Nunjucks environment
     const env = new nunjucks.Environment();
-    
+
     // Render the template with variables
     return env.renderString(content, variables);
   } catch (error) {
     const fileInfo = filename ? ` in ${filename}` : '';
-    throw new Error(`Template processing failed${fileInfo}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Template processing failed${fileInfo}: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
   }
 };
 
@@ -52,7 +54,9 @@ const processFile = async (
     const processedContent = processTemplate(content, variables, filename);
     await writeFile(destPath, processedContent, 'utf-8');
   } catch (error) {
-    throw new Error(`Failed to process file ${filename || sourcePath}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Failed to process file ${filename || sourcePath}: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
   }
 };
 
@@ -78,11 +82,11 @@ const scaffoldDirectory = async (
   for (const entry of entries) {
     const sourcePath = resolve(sourceDir, entry.name);
     const currentPath = relativePath ? `${relativePath}/${entry.name}` : entry.name;
-    
+
     if (progressSpinner) {
       progressSpinner.text = `Processing ${currentPath}...`;
     }
-    
+
     if (entry.isDirectory()) {
       // Handle subdirectories recursively
       const outputSubDir = resolve(outputDir, entry.name);
@@ -92,7 +96,7 @@ const scaffoldDirectory = async (
       // Handle files
       const outputFilename = getOutputFilename(entry.name);
       const destPath = resolve(outputDir, outputFilename);
-      
+
       if (isNunjucksFile(entry.name)) {
         // Process Nunjucks template
         await processFile(sourcePath, destPath, variables, entry.name);
@@ -111,7 +115,7 @@ export const scaffoldTemplate = async (options: ScaffoldOptions): Promise<void> 
     if (progressSpinner) {
       progressSpinner.text = 'Validating source directory...';
     }
-    
+
     // Verify source directory exists
     try {
       const sourceStat = await stat(sourceDir);
@@ -119,23 +123,25 @@ export const scaffoldTemplate = async (options: ScaffoldOptions): Promise<void> 
         throw new Error(`Source path is not a directory: ${sourceDir}`);
       }
     } catch {
-      throw new Error(`Source directory not found: ${sourceDir}\nPlease check that the template was cloned correctly.`);
+      throw new Error(
+        `Source directory not found: ${sourceDir}\nPlease check that the template was cloned correctly.`
+      );
     }
 
     if (progressSpinner) {
       progressSpinner.text = 'Creating output directory...';
     }
-    
+
     // Ensure output directory exists
     await ensureDirectoryExists(outputDir);
 
     if (progressSpinner) {
       progressSpinner.text = 'Starting template processing...';
     }
-    
+
     // Start scaffolding
     await scaffoldDirectory(sourceDir, outputDir, variables, progressSpinner);
-    
+
     if (progressSpinner) {
       progressSpinner.text = 'Template processing completed';
     }

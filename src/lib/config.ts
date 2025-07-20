@@ -37,8 +37,8 @@ const isValidGitHubRepoUrl = (url: string): boolean => {
     if (parsedUrl.hostname !== 'github.com') {
       return false;
     }
-    
-    const pathParts = parsedUrl.pathname.split('/').filter(part => part.length > 0);
+
+    const pathParts = parsedUrl.pathname.split('/').filter((part) => part.length > 0);
     return pathParts.length >= 2; // Should have at least owner/repo
   } catch {
     return false;
@@ -48,29 +48,31 @@ const isValidGitHubRepoUrl = (url: string): boolean => {
 const constructManifestUrl = (repoUrl: string, branch = 'main'): string => {
   try {
     const parsedUrl = new URL(repoUrl);
-    const pathParts = parsedUrl.pathname.split('/').filter(part => part.length > 0);
-    
+    const pathParts = parsedUrl.pathname.split('/').filter((part) => part.length > 0);
+
     if (pathParts.length < 2) {
       throw new Error('Invalid repository URL');
     }
-    
+
     const owner = pathParts[0];
     const repo = pathParts[1];
-    
+
     return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/manifest.yaml`;
   } catch {
     throw new Error('Failed to construct manifest URL');
   }
 };
 
-const tryFetchFromBranches = async (repoUrl: string): Promise<{ url: string; content: string } | null> => {
+const tryFetchFromBranches = async (
+  repoUrl: string
+): Promise<{ url: string; content: string } | null> => {
   const branches = ['main', 'master'];
-  
+
   for (const branch of branches) {
     try {
       const manifestUrl = constructManifestUrl(repoUrl, branch);
       const response = await fetch(manifestUrl);
-      
+
       if (response.ok) {
         const content = await response.text();
         return { url: manifestUrl, content };
@@ -79,7 +81,7 @@ const tryFetchFromBranches = async (repoUrl: string): Promise<{ url: string; con
       // Continue to next branch
     }
   }
-  
+
   return null;
 };
 
@@ -98,7 +100,7 @@ try {
 } catch (error) {
   const errorMessage = error instanceof Error ? error.message : 'Unknown error';
   configError = `Failed to initialize configuration: ${errorMessage}`;
-  
+
   console.error('❌ Configuration Error:');
   console.error(`   ${configError}`);
   console.error('');
@@ -107,7 +109,7 @@ try {
   console.error('   • Ensure sufficient disk space is available');
   console.error('   • Try running as administrator/sudo if permission issues persist');
   console.error('');
-  
+
   process.exit(1);
 }
 
@@ -130,19 +132,24 @@ export const fetchOrganizationManifest = async (): Promise<OrganizationManifest 
     const result = await tryFetchFromBranches(repoUrl);
     if (!result) {
       console.warn('⚠️  Could not fetch manifest.yaml from repository');
-      console.warn('   Make sure the repository contains a manifest.yaml file in the root directory');
+      console.warn(
+        '   Make sure the repository contains a manifest.yaml file in the root directory'
+      );
       return null;
     }
 
     const manifest = yaml.load(result.content) as OrganizationManifest;
-    
+
     // Cache the manifest with timestamp
     config.set('organizationManifestCache', manifest);
     config.set('lastOrgManifestFetch', Date.now());
-    
+
     return manifest;
   } catch (error) {
-    console.warn('⚠️  Could not fetch organization manifest:', error instanceof Error ? error.message : 'Unknown error');
+    console.warn(
+      '⚠️  Could not fetch organization manifest:',
+      error instanceof Error ? error.message : 'Unknown error'
+    );
     return null;
   }
 };
@@ -153,18 +160,18 @@ export const getOrganizationTemplates = async (): Promise<OrganizationTemplate[]
     const lastFetch = config.get('lastOrgManifestFetch', 0);
     const cacheAge = Date.now() - lastFetch;
     const oneHour = 60 * 60 * 1000;
-    
+
     let manifest = cacheAge < oneHour ? config.get('organizationManifestCache') : null;
-    
+
     if (!manifest) {
       manifest = await fetchOrganizationManifest();
     }
-    
+
     if (!manifest) {
       return [];
     }
-    
-    return manifest.templates.map(template => ({
+
+    return manifest.templates.map((template) => ({
       ...template,
       readonly: true as const,
       source: 'organization' as const,
@@ -192,19 +199,19 @@ export const getAllTemplates = async (): Promise<(OrganizationTemplate | UserTem
 export const addUserTemplate = (template: Omit<UserTemplate, 'source'>): void => {
   try {
     const userTemplates = getUserTemplates();
-    const existingIndex = userTemplates.findIndex(t => t.name === template.name);
-    
+    const existingIndex = userTemplates.findIndex((t) => t.name === template.name);
+
     const newTemplate: UserTemplate = {
       ...template,
       source: 'user',
     };
-    
+
     if (existingIndex >= 0) {
       userTemplates[existingIndex] = newTemplate;
     } else {
       userTemplates.push(newTemplate);
     }
-    
+
     config.set('userTemplates', userTemplates);
   } catch {
     return handleConfigError('adding user template');
@@ -214,13 +221,13 @@ export const addUserTemplate = (template: Omit<UserTemplate, 'source'>): void =>
 export const removeUserTemplate = (name: string): boolean => {
   try {
     const userTemplates = getUserTemplates();
-    const filteredTemplates = userTemplates.filter(t => t.name !== name);
-    
+    const filteredTemplates = userTemplates.filter((t) => t.name !== name);
+
     if (filteredTemplates.length < userTemplates.length) {
       config.set('userTemplates', filteredTemplates);
       return true;
     }
-    
+
     return false;
   } catch {
     return handleConfigError('removing user template');
@@ -230,7 +237,7 @@ export const removeUserTemplate = (name: string): boolean => {
 export const hasUserTemplate = (name: string): boolean => {
   try {
     const userTemplates = getUserTemplates();
-    return userTemplates.some(t => t.name === name);
+    return userTemplates.some((t) => t.name === name);
   } catch {
     return handleConfigError('checking user template');
   }
@@ -238,12 +245,14 @@ export const hasUserTemplate = (name: string): boolean => {
 
 export const hasAnyTemplate = async (name: string): Promise<boolean> => {
   const allTemplates = await getAllTemplates();
-  return allTemplates.some(t => t.name === name);
+  return allTemplates.some((t) => t.name === name);
 };
 
-export const getTemplate = async (name: string): Promise<OrganizationTemplate | UserTemplate | null> => {
+export const getTemplate = async (
+  name: string
+): Promise<OrganizationTemplate | UserTemplate | null> => {
   const allTemplates = await getAllTemplates();
-  return allTemplates.find(t => t.name === name) || null;
+  return allTemplates.find((t) => t.name === name) || null;
 };
 
 // Setup and initialization
@@ -298,7 +307,7 @@ export const refreshOrganizationManifest = async (): Promise<boolean> => {
     // Clear cache to force refresh
     config.delete('organizationManifestCache');
     config.delete('lastOrgManifestFetch');
-    
+
     const manifest = await fetchOrganizationManifest();
     return manifest !== null;
   } catch {

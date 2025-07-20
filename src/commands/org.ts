@@ -1,29 +1,29 @@
-import { input, confirm } from '@inquirer/prompts';
-import { 
-  getOrganizationRepoUrl, 
-  setOrganizationRepoUrl, 
-  refreshOrganizationManifest,
+import { confirm, input } from '@inquirer/prompts';
+import {
   fetchOrganizationManifest,
+  getOrganizationRepoUrl,
   getOrganizationTemplates,
-  validateGitHubRepoUrl 
+  refreshOrganizationManifest,
+  setOrganizationRepoUrl,
+  validateGitHubRepoUrl,
 } from '../lib/config.js';
 
 export const orgCommand = async (action?: string) => {
   if (!action) {
     // Show current organization status
     const currentUrl = getOrganizationRepoUrl();
-    
+
     if (currentUrl) {
       console.log('🏢 Organization Configuration');
       console.log('');
       console.log(`Repository URL: ${currentUrl}`);
-      
+
       const orgTemplates = await getOrganizationTemplates();
       console.log(`Templates: ${orgTemplates.length} available`);
-      
+
       if (orgTemplates.length > 0) {
         console.log('');
-        orgTemplates.forEach(template => {
+        orgTemplates.forEach((template) => {
           console.log(`   • ${template.name}`);
         });
       }
@@ -59,10 +59,10 @@ export const orgCommand = async (action?: string) => {
 
 const setUrlCommand = async () => {
   const currentUrl = getOrganizationRepoUrl();
-  
+
   console.log('🔧 Update Organization Repository URL');
   console.log('');
-  
+
   if (currentUrl) {
     console.log(`Current repository: ${currentUrl}`);
     console.log('');
@@ -84,10 +84,10 @@ const setUrlCommand = async () => {
 
   console.log('');
   console.log('🔍 Testing repository and looking for manifest.yaml...');
-  
+
   setOrganizationRepoUrl(repoUrl.trim());
   const manifest = await fetchOrganizationManifest();
-  
+
   if (manifest) {
     console.log(`✅ Success! Found ${manifest.templates.length} organization template(s)`);
     console.log(`   Organization: ${manifest.name}`);
@@ -103,7 +103,7 @@ const setUrlCommand = async () => {
 
 const refreshCommand = async () => {
   const currentUrl = getOrganizationRepoUrl();
-  
+
   if (!currentUrl) {
     console.error('❌ No organization repository URL configured');
     console.log('');
@@ -115,9 +115,9 @@ const refreshCommand = async () => {
   console.log('🔄 Refreshing organization templates...');
   console.log(`   Repository: ${currentUrl}`);
   console.log('');
-  
+
   const success = await refreshOrganizationManifest();
-  
+
   if (success) {
     const orgTemplates = await getOrganizationTemplates();
     console.log(`✅ Successfully refreshed ${orgTemplates.length} organization template(s)`);
@@ -130,7 +130,7 @@ const refreshCommand = async () => {
 
 const clearCommand = async () => {
   const currentUrl = getOrganizationRepoUrl();
-  
+
   if (!currentUrl) {
     console.log('📭 No organization configuration to clear');
     return;
@@ -140,12 +140,12 @@ const clearCommand = async () => {
   console.log('');
   console.log(`Current repository: ${currentUrl}`);
   console.log('');
-  
+
   const confirmed = await confirm({
     message: 'Are you sure you want to remove organization configuration?',
     default: false,
   });
-  
+
   if (confirmed) {
     setOrganizationRepoUrl(undefined);
     console.log('✅ Organization configuration removed');

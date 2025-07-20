@@ -17,7 +17,7 @@ export const listCommand = async () => {
 
   if (orgTemplates.length > 0) {
     console.log('🏢 Organization Templates (read-only):');
-    orgTemplates.forEach(template => {
+    orgTemplates.forEach((template) => {
       console.log(`   • ${template.name}`);
       if (template.description) {
         console.log(`     ${template.description}`);
@@ -29,7 +29,7 @@ export const listCommand = async () => {
 
   if (userTemplates.length > 0) {
     console.log('👤 User Templates:');
-    userTemplates.forEach(template => {
+    userTemplates.forEach((template) => {
       console.log(`   • ${template.name}`);
       if (template.description) {
         console.log(`     ${template.description}`);

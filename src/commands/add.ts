@@ -1,4 +1,4 @@
-import { addUserTemplate, hasUserTemplate, getOrganizationTemplates } from '../lib/config.js';
+import { addUserTemplate, getOrganizationTemplates, hasUserTemplate } from '../lib/config.js';
 
 const isValidGitHubUrl = (url: string): boolean => {
   try {
@@ -27,11 +27,13 @@ export const addCommand = async (name: string, githubUrl: string) => {
 
   // Check if this conflicts with an organization template
   const orgTemplates = await getOrganizationTemplates();
-  const conflictsWithOrg = orgTemplates.some(t => t.name === templateName);
-  
+  const conflictsWithOrg = orgTemplates.some((t) => t.name === templateName);
+
   if (conflictsWithOrg) {
     console.error(`❌ Error: Template name "${templateName}" is reserved by your organization`);
-    console.error('   Organization templates cannot be overridden. Please choose a different name.');
+    console.error(
+      '   Organization templates cannot be overridden. Please choose a different name.'
+    );
     return;
   }
 

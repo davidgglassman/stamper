@@ -1,4 +1,4 @@
-import { removeUserTemplate, hasUserTemplate, getOrganizationTemplates } from '../lib/config.js';
+import { getOrganizationTemplates, hasUserTemplate, removeUserTemplate } from '../lib/config.js';
 
 export const removeCommand = async (name: string) => {
   if (!name || name.trim().length === 0) {
@@ -10,8 +10,8 @@ export const removeCommand = async (name: string) => {
 
   // Check if this is an organization template
   const orgTemplates = await getOrganizationTemplates();
-  const isOrgTemplate = orgTemplates.some(t => t.name === templateName);
-  
+  const isOrgTemplate = orgTemplates.some((t) => t.name === templateName);
+
   if (isOrgTemplate) {
     console.error(`❌ Error: Cannot remove organization template "${templateName}"`);
     console.error('   Organization templates are read-only and managed by your organization.');
@@ -29,7 +29,7 @@ export const removeCommand = async (name: string) => {
 
   // Remove user template
   const removed = removeUserTemplate(templateName);
-  
+
   if (removed) {
     console.log(`✅ User template "${templateName}" removed successfully!`);
   } else {

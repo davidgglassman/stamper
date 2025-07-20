@@ -1,4 +1,4 @@
-import { input, confirm, select, checkbox, password, number, rawlist } from '@inquirer/prompts';
+import { checkbox, confirm, input, number, password, rawlist, select } from '@inquirer/prompts';
 
 export interface TemplateQuestion {
   name: string;
@@ -41,7 +41,7 @@ export const askQuestions = async (questions: TemplateQuestion[]): Promise<Answe
         case 'select':
           answers[question.name] = await select({
             message: question.message,
-            choices: question.choices?.map(choice => ({ name: choice, value: choice })) || [],
+            choices: question.choices?.map((choice) => ({ name: choice, value: choice })) || [],
             default: typeof question.default === 'string' ? question.default : undefined,
           });
           break;
@@ -49,7 +49,7 @@ export const askQuestions = async (questions: TemplateQuestion[]): Promise<Answe
         case 'checkbox':
           answers[question.name] = await checkbox({
             message: question.message,
-            choices: question.choices?.map(choice => ({ name: choice, value: choice })) || [],
+            choices: question.choices?.map((choice) => ({ name: choice, value: choice })) || [],
             // checkbox doesn't support default in @inquirer/prompts v7
           });
           break;
@@ -72,13 +72,15 @@ export const askQuestions = async (questions: TemplateQuestion[]): Promise<Answe
         case 'rawlist':
           answers[question.name] = await rawlist({
             message: question.message,
-            choices: question.choices?.map(choice => ({ name: choice, value: choice })) || [],
+            choices: question.choices?.map((choice) => ({ name: choice, value: choice })) || [],
             // rawlist doesn't support default in @inquirer/prompts v7
           });
           break;
 
         default:
-          console.warn(`⚠️  Unsupported question type: ${question.type}, skipping question: ${question.name}`);
+          console.warn(
+            `⚠️  Unsupported question type: ${question.type}, skipping question: ${question.name}`
+          );
           break;
       }
     } catch (error) {
@@ -128,7 +130,11 @@ export const parseTemplateConfig = (yamlContent: unknown): TemplateConfig => {
       throw new Error(`Invalid question at index ${index}: missing or invalid "type" field`);
     }
 
-    if (!['input', 'confirm', 'select', 'checkbox', 'password', 'number', 'rawlist'].includes(question.type)) {
+    if (
+      !['input', 'confirm', 'select', 'checkbox', 'password', 'number', 'rawlist'].includes(
+        question.type
+      )
+    ) {
       throw new Error(`Invalid question at index ${index}: unsupported type "${question.type}"`);
     }
 
@@ -138,23 +144,44 @@ export const parseTemplateConfig = (yamlContent: unknown): TemplateConfig => {
 
     const templateQuestion: TemplateQuestion = {
       name: question.name,
-      type: question.type as 'input' | 'confirm' | 'select' | 'checkbox' | 'password' | 'number' | 'rawlist',
+      type: question.type as
+        | 'input'
+        | 'confirm'
+        | 'select'
+        | 'checkbox'
+        | 'password'
+        | 'number'
+        | 'rawlist',
       message: question.message,
     };
 
     // Add optional default value
     if (question.default !== undefined) {
       if (question.type === 'confirm' && typeof question.default !== 'boolean') {
-        throw new Error(`Invalid question at index ${index}: "default" for confirm questions must be boolean`);
+        throw new Error(
+          `Invalid question at index ${index}: "default" for confirm questions must be boolean`
+        );
       }
       if (question.type === 'number' && typeof question.default !== 'number') {
-        throw new Error(`Invalid question at index ${index}: "default" for number questions must be number`);
+        throw new Error(
+          `Invalid question at index ${index}: "default" for number questions must be number`
+        );
       }
       if (question.type === 'checkbox' && !Array.isArray(question.default)) {
-        throw new Error(`Invalid question at index ${index}: "default" for checkbox questions must be array`);
+        throw new Error(
+          `Invalid question at index ${index}: "default" for checkbox questions must be array`
+        );
       }
-      if ((question.type === 'input' || question.type === 'select' || question.type === 'rawlist' || question.type === 'password') && typeof question.default !== 'string') {
-        throw new Error(`Invalid question at index ${index}: "default" for ${question.type} questions must be string`);
+      if (
+        (question.type === 'input' ||
+          question.type === 'select' ||
+          question.type === 'rawlist' ||
+          question.type === 'password') &&
+        typeof question.default !== 'string'
+      ) {
+        throw new Error(
+          `Invalid question at index ${index}: "default" for ${question.type} questions must be string`
+        );
       }
       templateQuestion.default = question.default as string | boolean | number | string[];
     }
@@ -162,7 +189,9 @@ export const parseTemplateConfig = (yamlContent: unknown): TemplateConfig => {
     // Add choices for questions that require them
     if (['select', 'checkbox', 'rawlist'].includes(question.type)) {
       if (!Array.isArray(question.choices) || question.choices.length === 0) {
-        throw new Error(`Invalid question at index ${index}: "choices" array required for ${question.type} questions`);
+        throw new Error(
+          `Invalid question at index ${index}: "choices" array required for ${question.type} questions`
+        );
       }
       if (!question.choices.every((choice: unknown) => typeof choice === 'string')) {
         throw new Error(`Invalid question at index ${index}: all "choices" must be strings`);
