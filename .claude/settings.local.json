@@ -15,7 +15,9 @@
       "Bash(STAMPER_ORG_MANIFEST_URL=\"file:///mnt/d/Sync/Repos/stamper/test-org-manifest.json\" node bin/index.js list)",
       "Bash(curl:*)",
       "Bash(pkill:*)",
-      "Bash(true)"
+      "Bash(true)",
+      "Bash(npm run serve:*)",
+      "Bash(mkdir:*)"
     ],
     "deny": []
   }

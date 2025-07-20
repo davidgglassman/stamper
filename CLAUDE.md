@@ -188,22 +188,22 @@ stamper/
 - [x] **Test Goal**: Complete organization template lifecycle management
 
 #### Phase 3A: Basic Git Integration
-- [ ] Implement git.ts wrapper using simple-git
-- [ ] Add temp directory management
-- [ ] Basic repo cloning (exclude .git folder)
-- [ ] **Test Goal**: Can clone a real GitHub repo to temp folder
+- [x] Implement git.ts wrapper using simple-git
+- [x] Add temp directory management
+- [x] Basic repo cloning (exclude .git folder)
+- [x] **Test Goal**: Can clone a real GitHub repo to temp folder
 
 #### Phase 3B: Template Validation
-- [ ] Add YAML parsing in scaffold.ts
-- [ ] Check for stamper.yaml in cloned repos
-- [ ] Basic YAML validation (name, description, questions exist)
-- [ ] Error handling for missing/invalid files
-- [ ] **Test Goal**: Validates template structure correctly
+- [x] Add YAML parsing in scaffold.ts
+- [x] Check for stamper.yaml in cloned repos
+- [x] Basic YAML validation (name, description, questions exist)
+- [x] Error handling for missing/invalid files
+- [x] **Test Goal**: Validates template structure correctly
 
 #### Phase 4A: Static Template Creation (No Questions)
-- [ ] Implement basic scaffolding (copy files, no Nunjucks yet)
-- [ ] Output directory handling (current dir or --output-dir)
-- [ ] **Test Goal**: Can copy template files to target directory
+- [x] Implement basic scaffolding (copy files, no Nunjucks yet)
+- [x] Output directory handling (current dir or --output-dir)
+- [x] **Test Goal**: Can copy template files to target directory
 
 #### Phase 4B: Question System
 - [ ] Implement questions.ts - convert YAML to inquirer prompts
