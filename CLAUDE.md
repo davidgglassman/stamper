@@ -98,10 +98,7 @@ stamper/
 
 ## Implementation Progress
 
-### ✅ Completed Phases
 - [x] Project planning and architecture
-
-### 🚧 Current Phase: Setup & Infrastructure
 
 #### Phase 1A: Basic CLI Structure
 - [x] Add dependencies (simple-git, conf, js-yaml, commander)
@@ -114,8 +111,6 @@ stamper/
 - [x] Implement config.ts using conf package
 - [x] Add basic config initialization (empty template registry)
 - [x] **Test Goal**: Config file created on first run
-
-### 📋 Upcoming Phases
 
 #### Phase 2A: Template Registry - Add Command
 - [ ] Implement `stamper add <name> <url>` command
