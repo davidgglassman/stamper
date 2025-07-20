@@ -1,11 +1,18 @@
 {
   "name": "stamper-cli",
   "description": "CLI for scaffolding projects from Nunjucks templates with interactive questions",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "David Glassman",
   "license": "MIT",
   "type": "module",
-  "keywords": ["cli", "scaffold", "template", "generator", "nunjucks", "project"],
+  "keywords": [
+    "cli",
+    "scaffold",
+    "template",
+    "generator",
+    "nunjucks",
+    "project"
+  ],
   "homepage": "https://github.com/davidgglassman/stamper#readme",
   "repository": {
     "type": "git",
