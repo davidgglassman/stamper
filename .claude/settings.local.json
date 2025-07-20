@@ -17,7 +17,8 @@
       "Bash(pkill:*)",
       "Bash(true)",
       "Bash(npm run serve:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(./bin/index.js setup:*)"
     ],
     "deny": []
   }

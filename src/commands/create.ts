@@ -1,10 +1,12 @@
 import { select, input } from '@inquirer/prompts';
 import { getAllTemplates, getTemplate } from '../lib/config.js';
 import { GitManager } from '../lib/git.js';
+import { askQuestions, parseTemplateConfig, type AnswerMap } from '../lib/questions.js';
 import { existsSync } from 'fs';
 import { resolve } from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
+import yaml from 'js-yaml';
 
 export const createCommand = async (options: { outputDir?: string }) => {
   try {
@@ -98,11 +100,48 @@ export const createCommand = async (options: { outputDir?: string }) => {
         console.log(`   ${icon} ${file.name}`);
       });
       
-      // Check for stamper.yaml
+      // Check for stamper.yaml and process questions
       const hasStamperYaml = files.some(file => file.name === 'stamper.yaml');
+      let userAnswers: AnswerMap = {};
+      
       console.log('');
       if (hasStamperYaml) {
         console.log(chalk.green('✅ stamper.yaml configuration found'));
+        
+        try {
+          // Read and parse stamper.yaml
+          const { readFile } = await import('fs/promises');
+          const stamperYamlPath = resolve(cloneDir, 'stamper.yaml');
+          const yamlContent = await readFile(stamperYamlPath, 'utf-8');
+          const parsedYaml = yaml.load(yamlContent);
+          const templateConfig = parseTemplateConfig(parsedYaml);
+          
+          if (templateConfig.questions.length > 0) {
+            console.log('');
+            console.log(chalk.blue('📝 Template configuration:'));
+            console.log(`   ${chalk.bold(templateConfig.name)}`);
+            console.log(`   ${templateConfig.description}`);
+            console.log('');
+            console.log(chalk.blue('🤔 Please answer the following questions:'));
+            console.log('');
+            
+            userAnswers = await askQuestions(templateConfig.questions);
+            
+            console.log('');
+            console.log(chalk.green('✅ Questions completed!'));
+            console.log('');
+            console.log(chalk.blue('📊 Your answers:'));
+            for (const [key, value] of Object.entries(userAnswers)) {
+              console.log(`   ${chalk.bold(key)}: ${value}`);
+            }
+          } else {
+            console.log(chalk.yellow('   No questions defined in template'));
+          }
+        } catch (error) {
+          console.log(chalk.red('❌ Error processing stamper.yaml:'));
+          console.log(`   ${error instanceof Error ? error.message : 'Unknown error'}`);
+          console.log('   Continuing without template questions...');
+        }
       } else {
         console.log(chalk.yellow('⚠️  No stamper.yaml found - using default configuration'));
       }
@@ -137,12 +176,30 @@ export const createCommand = async (options: { outputDir?: string }) => {
         throw error;
       }
       
+      // Clean up stamper.yaml from output directory if it exists
+      if (hasStamperYaml) {
+        const cleanupSpinner = ora('Cleaning up template configuration...').start();
+        try {
+          const { unlink } = await import('fs/promises');
+          const stamperYamlOutputPath = resolve(resolvedOutputDir, 'stamper.yaml');
+          await unlink(stamperYamlOutputPath);
+          cleanupSpinner.succeed('Template configuration removed');
+        } catch {
+          cleanupSpinner.warn('Could not remove stamper.yaml from output directory');
+          // Non-fatal error, continue execution
+        }
+      }
+      
       console.log('');
       console.log(chalk.green('🎉 Project created successfully!'));
       console.log(`   Location: ${chalk.bold(resolvedOutputDir)}`);
+      
+      if (Object.keys(userAnswers).length > 0) {
+        console.log(`   Questions processed: ${Object.keys(userAnswers).length}`);
+      }
+      
       console.log('');
-      console.log(chalk.blue('🔜 Coming in future phases:'));
-      console.log('   • Process template questions from stamper.yaml');
+      console.log(chalk.blue('🔜 Coming in next phase:'));
       console.log('   • Apply Nunjucks templating with user inputs');
       
     } catch (error) {
