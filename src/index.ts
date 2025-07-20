@@ -5,6 +5,10 @@ import { createCommand } from './commands/create.js';
 import { addCommand } from './commands/add.js';
 import { listCommand } from './commands/list.js';
 import { removeCommand } from './commands/remove.js';
+import { getTemplates } from './lib/config.js';
+
+// Initialize config (creates config file on first run)
+getTemplates();
 
 const program = new Command();
 

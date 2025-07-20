@@ -111,9 +111,9 @@ stamper/
 - [x] **Test Goal**: `stamper --help` shows all commands
 
 #### Phase 1B: Configuration System
-- [ ] Implement config.ts using conf package
-- [ ] Add basic config initialization (empty template registry)
-- [ ] **Test Goal**: Config file created on first run
+- [x] Implement config.ts using conf package
+- [x] Add basic config initialization (empty template registry)
+- [x] **Test Goal**: Config file created on first run
 
 ### 📋 Upcoming Phases
 
