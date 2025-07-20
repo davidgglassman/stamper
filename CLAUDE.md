@@ -206,16 +206,16 @@ stamper/
 - [x] **Test Goal**: Can copy template files to target directory
 
 #### Phase 4B: Question System
-- [ ] Implement questions.ts - convert YAML to inquirer prompts
-- [ ] Support basic question types (input, confirm)
-- [ ] Collect user answers
-- [ ] **Test Goal**: Questions are asked based on template config
+- [x] Implement questions.ts - convert YAML to inquirer prompts
+- [x] Support basic question types (input, confirm)
+- [x] Collect user answers
+- [x] **Test Goal**: Questions are asked based on template config
 
 #### Phase 4C: Nunjucks Integration
-- [ ] Add Nunjucks rendering to scaffolding process
-- [ ] Pass collected answers to template rendering
-- [ ] Process .njk files, copy others as-is
-- [ ] **Test Goal**: Variables are replaced in template files
+- [x] Add Nunjucks rendering to scaffolding process
+- [x] Pass collected answers to template rendering
+- [x] Process .njk files, copy others as-is
+- [x] **Test Goal**: Variables are replaced in template files
 
 #### Phase 5A: Enhanced UX
 - [ ] Add progress indicators with ora during git operations

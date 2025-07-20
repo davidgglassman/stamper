@@ -2,6 +2,7 @@ import { select, input } from '@inquirer/prompts';
 import { getAllTemplates, getTemplate } from '../lib/config.js';
 import { GitManager } from '../lib/git.js';
 import { askQuestions, parseTemplateConfig, type AnswerMap } from '../lib/questions.js';
+import { scaffoldTemplate } from '../lib/scaffold.js';
 import { existsSync } from 'fs';
 import { resolve } from 'path';
 import chalk from 'chalk';
@@ -90,7 +91,7 @@ export const createCommand = async (options: { outputDir?: string }) => {
       spinner.succeed('Template cloned successfully');
       
       // Show what was cloned
-      const { readdir, mkdir, cp } = await import('fs/promises');
+      const { readdir } = await import('fs/promises');
       const files = await readdir(cloneDir, { withFileTypes: true });
       
       console.log('');
@@ -146,33 +147,18 @@ export const createCommand = async (options: { outputDir?: string }) => {
         console.log(chalk.yellow('⚠️  No stamper.yaml found - using default configuration'));
       }
       
-      // Create output directory if it doesn't exist
+      // Scaffold template with Nunjucks processing
       console.log('');
-      const copySpinner = ora('Creating output directory...').start();
+      const scaffoldSpinner = ora('Processing template files...').start();
       try {
-        await mkdir(resolvedOutputDir, { recursive: true });
-        copySpinner.succeed('Output directory ready');
+        await scaffoldTemplate({
+          sourceDir: cloneDir,
+          outputDir: resolvedOutputDir,
+          variables: userAnswers,
+        });
+        scaffoldSpinner.succeed('Template processed successfully');
       } catch (error) {
-        copySpinner.fail('Failed to create output directory');
-        throw error;
-      }
-      
-      // Copy template files to output directory
-      const copyFilesSpinner = ora('Copying template files...').start();
-      try {
-        // Copy contents of cloneDir to resolvedOutputDir, not the directory itself
-        for (const file of files) {
-          const sourcePath = resolve(cloneDir, file.name);
-          const destPath = resolve(resolvedOutputDir, file.name);
-          
-          await cp(sourcePath, destPath, { 
-            recursive: true,
-            force: false // Don't overwrite existing files
-          });
-        }
-        copyFilesSpinner.succeed('Template files copied successfully');
-      } catch (error) {
-        copyFilesSpinner.fail('Failed to copy template files');
+        scaffoldSpinner.fail('Failed to process template');
         throw error;
       }
       
@@ -199,8 +185,10 @@ export const createCommand = async (options: { outputDir?: string }) => {
       }
       
       console.log('');
-      console.log(chalk.blue('🔜 Coming in next phase:'));
-      console.log('   • Apply Nunjucks templating with user inputs');
+      console.log(chalk.green('✅ Features completed:'));
+      console.log('   • Template questions processed');
+      console.log('   • Nunjucks templating applied');
+      console.log('   • Project files generated');
       
     } catch (error) {
       spinner.fail('Failed to clone template');

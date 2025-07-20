@@ -18,7 +18,8 @@
       "Bash(true)",
       "Bash(npm run serve:*)",
       "Bash(mkdir:*)",
-      "Bash(./bin/index.js setup:*)"
+      "Bash(./bin/index.js setup:*)",
+      "Bash(mv:*)"
     ],
     "deny": []
   }
