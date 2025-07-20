@@ -96,13 +96,22 @@ Examples:
     await orgCommand(action);
   });
 
-// Handle first-run setup
-if (!setupCompleted && process.argv.length === 2) {
-  // User ran 'stamper' with no arguments and setup is not completed
-  console.log('👋 Welcome to Stamper! Looks like this is your first time.');
+// Handle different execution modes
+if (process.argv.length === 2) {
+  // User ran 'npx stamper-cli' or 'stamper-cli' with no arguments - automatically run create
+  console.log('🚀 Welcome to Stamper CLI!');
   console.log('');
-  console.log('💡 Run "stamper setup" to get started, or use any command directly.');
-  console.log('');
+  
+  // Check if setup is needed
+  if (!setupCompleted) {
+    console.log('🔧 First-time setup detected...');
+    console.log('💡 You can run "stamper-cli setup" later to configure organization templates.');
+    console.log('');
+  }
+  
+  // Automatically run create command
+  createCommand({});
+} else {
+  // Normal CLI usage with specific commands
+  program.parse();
 }
-
-program.parse();

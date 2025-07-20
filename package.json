@@ -1,16 +1,37 @@
 {
-  "name": "stamper",
-  "description": "CLI for scaffolding projects from templates",
+  "name": "stamper-cli",
+  "description": "CLI for scaffolding projects from Nunjucks templates with interactive questions",
   "version": "1.0.0",
   "author": "David Glassman",
   "license": "MIT",
   "type": "module",
+  "keywords": ["cli", "scaffold", "template", "generator", "nunjucks", "project"],
+  "homepage": "https://github.com/davidgglassman/stamper#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/davidgglassman/stamper.git"
+  },
+  "bugs": {
+    "url": "https://github.com/davidgglassman/stamper/issues"
+  },
   "bin": {
-    "stamper": "./bin/index.js"
+    "stamper-cli": "./bin/index.js"
+  },
+  "files": [
+    "bin/",
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
   },
   "scripts": {
     "serve": "node ./bin/index.js",
-    "build": "eslint . && tsc -b"
+    "build": "eslint . && tsc -b",
+    "clean": "rm -rf dist",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "@inquirer/prompts": "^7.6.0",

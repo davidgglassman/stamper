@@ -19,7 +19,18 @@
       "Bash(npm run serve:*)",
       "Bash(mkdir:*)",
       "Bash(./bin/index.js setup:*)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(npm install:*)",
+      "Bash(yalc publish:*)",
+      "Bash(npm init:*)",
+      "Bash(yalc add:*)",
+      "Bash(npx stamper:*)",
+      "Bash(dos2unix:*)",
+      "Bash(sed:*)",
+      "Bash(yalc update:*)",
+      "Bash(yalc remove:*)",
+      "Bash(npm_config_user_config=true node bin/index.js)",
+      "Bash(npm whoami:*)"
     ],
     "deny": []
   }

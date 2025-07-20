@@ -1,0 +1,33 @@
+# Source files
+src/
+tsconfig.json
+eslint.config.js
+.prettierrc
+
+# Development files
+node_modules/
+.git/
+.gitignore
+
+# Testing files
+test-*/
+*test*.js
+
+# Development tools
+CLAUDE.md
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
