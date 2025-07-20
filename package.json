@@ -1,7 +1,7 @@
 {
   "name": "stamper-cli",
   "description": "CLI for scaffolding projects from Nunjucks templates with interactive questions",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "author": "David Glassman",
   "license": "MIT",
   "type": "module",
