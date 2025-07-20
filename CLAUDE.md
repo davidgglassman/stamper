@@ -26,16 +26,60 @@ Stamper is a TypeScript Node.js CLI tool for scaffolding projects from Nunjucks 
 
 ### Main Commands
 - `stamper create [--output-dir <path>]` - Interactive template selection and scaffolding
-- `stamper add <name> <github-url>` - Add template to registry
-- `stamper list` - Show available templates
-- `stamper remove <name>` - Remove template from registry
+- `stamper add <name> <github-url>` - Add user template to registry
+- `stamper list` - Show available templates (organization + user)
+- `stamper remove <name>` - Remove user template from registry
+- `stamper setup` - First-run interactive setup and organization configuration
+- `stamper org [action]` - Organization template management
+
+### Organization Commands
+- `stamper org` - Show current organization configuration
+- `stamper org set-url` - Set organization repository URL
+- `stamper org refresh` - Force refresh organization templates
+- `stamper org clear` - Remove organization configuration
 
 ### Command Behavior
 - `create`: Lists templates → prompts for selection → asks template questions → scaffolds to output directory
+- `add`: Adds user templates only (cannot override organization templates)
+- `list`: Shows organization templates (read-only) and user templates (editable) separately
+- `remove`: Removes user templates only (organization templates protected)
+- `setup`: Interactive first-run setup with optional organization repository configuration
 - Output directory: Uses `--output-dir` flag or prompts user (defaults to current directory)
 - Template questions are defined in each template's `stamper.yaml` file
 
+### Template Types
+- **Organization Templates**: Read-only, managed via GitHub repository with `manifest.yaml`
+- **User Templates**: Fully editable, stored in local config, can be added/removed via CLI
+
 ## Template Structure
+
+### Organization Manifest Repository
+Organizations can provide approved templates via a GitHub repository containing a `manifest.yaml` file:
+
+```
+organization-templates/
+├── manifest.yaml        # Required: Organization template manifest
+└── README.md           # Optional: Documentation
+```
+
+#### manifest.yaml Format
+```yaml
+name: "Company Templates"
+description: "Standard templates for our development team"
+templates:
+  - name: "react-typescript"
+    url: "https://github.com/company/react-template"
+    description: "Company React template with TypeScript and standards"
+  - name: "express-api"
+    url: "https://github.com/company/api-template"
+    description: "Company Express API template with authentication"
+```
+
+#### Organization Setup
+1. Create GitHub repository (public or internal)
+2. Add `manifest.yaml` to repository root
+3. Share repository URL with team: `https://github.com/company/templates`
+4. Users run `stamper setup` and enter the repository URL
 
 ### Template Repository Requirements
 Each template repository must contain:
@@ -75,11 +119,13 @@ stamper/
 ├── src/
 │   ├── commands/
 │   │   ├── create.ts        # Template selection & scaffolding
-│   │   ├── add.ts           # Add template to registry
-│   │   ├── list.ts          # List available templates
-│   │   └── remove.ts        # Remove template from registry
+│   │   ├── add.ts           # Add user template to registry
+│   │   ├── list.ts          # List available templates (org + user)
+│   │   ├── remove.ts        # Remove user template from registry
+│   │   ├── setup.ts         # First-run interactive setup
+│   │   └── org.ts           # Organization template management
 │   ├── lib/
-│   │   ├── config.ts        # Configuration management (conf)
+│   │   ├── config.ts        # Dual template configuration system
 │   │   ├── git.ts           # Git operations (simple-git)
 │   │   ├── scaffold.ts      # Template processing & scaffolding
 │   │   └── questions.ts     # Dynamic question generation
@@ -92,7 +138,7 @@ stamper/
 ├── dist/                    # Compiled TypeScript output
 ├── package.json
 ├── tsconfig.json
-├── .eslintrc.js
+├── eslint.config.js
 └── .prettierrc
 ```
 
@@ -113,15 +159,33 @@ stamper/
 - [x] **Test Goal**: Config file created on first run
 
 #### Phase 2A: Template Registry - Add Command
-- [ ] Implement `stamper add <name> <url>` command
-- [ ] Store templates in config (name + URL only)
-- [ ] Basic duplicate name prevention
-- [ ] **Test Goal**: `stamper add react https://github.com/user/react-template` works
+- [x] Implement `stamper add <name> <url>` command
+- [x] Store templates in config (name + URL only)
+- [x] Basic duplicate name prevention
+- [x] **Test Goal**: `stamper add react https://github.com/user/react-template` works
 
 #### Phase 2B: Template Registry - List & Remove Commands
-- [ ] Implement `stamper list` - shows added templates
-- [ ] Implement `stamper remove <name>` - removes from registry
-- [ ] **Test Goal**: Complete registry CRUD operations work
+- [x] Implement `stamper list` - shows added templates
+- [x] Implement `stamper remove <name>` - removes from registry
+- [x] **Test Goal**: Complete registry CRUD operations work
+
+#### Phase 2C: Dual Template System
+- [x] Implement organization vs user template separation
+- [x] Add organization manifest repository URL system
+- [x] Organization templates are read-only, user templates editable
+- [x] Template name conflict protection (org templates cannot be overridden)
+- [x] YAML manifest format support for organization templates
+- [x] Automatic GitHub repository URL handling (main/master branch detection)
+- [x] **Test Goal**: Organization templates protected, user templates fully manageable
+
+#### Phase 2D: Organization Management Commands
+- [x] Implement `stamper setup` - first-run interactive setup
+- [x] Implement `stamper org` - show organization status
+- [x] Implement `stamper org set-url` - set organization repository URL
+- [x] Implement `stamper org refresh` - force refresh organization templates
+- [x] Implement `stamper org clear` - remove organization configuration
+- [x] Add comprehensive help documentation for all commands
+- [x] **Test Goal**: Complete organization template lifecycle management
 
 #### Phase 3A: Basic Git Integration
 - [ ] Implement git.ts wrapper using simple-git
@@ -207,3 +271,4 @@ Each sub-phase must be fully functional and testable:
 
 ### Memory of Best Practices
 - At the end of each phase when you are testing the Test Goal, also tell me the steps I would take to test on my own. I want to independently validate everything is working.
+- **Update Help Documentation**: Always update the help documentation for a command whenever it has new or updated flags/options

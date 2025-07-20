@@ -19,6 +19,9 @@ export default [
         Buffer: 'readonly',
         __dirname: 'readonly',
         __filename: 'readonly',
+        URL: 'readonly',
+        fetch: 'readonly',
+        Date: 'readonly',
       },
     },
     plugins: {
