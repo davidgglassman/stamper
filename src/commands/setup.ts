@@ -15,8 +15,8 @@ import { print } from '../utils/print.js';
 export const setupCommand = async () => {
   // ---------- Welcome Messages
 
-  print.fullLine('🚀 Welcome to Stamper!');
-  print.fullLine("Let's set up your template configuration.");
+  print.line('🚀 Welcome to Stamper!');
+  print.line("Let's set up your template configuration.");
 
   // ---------- Organization Templates Available
 
@@ -28,9 +28,9 @@ export const setupCommand = async () => {
   if (hasOrganization) {
     // ---------- Organization Setup
 
-    print.line('💡 Your organization should provide a GitHub repository that contains');
-    print.line('   a manifest.yaml file with approved templates. This looks like:');
-    print.fullLine('   https://github.com/yourcompany/stamper-templates');
+    print.line('💡 Your organization should provide a GitHub repository that contains', false);
+    print.line('   a manifest.yaml file with approved templates. This looks like:', false);
+    print.line('   https://github.com/yourcompany/stamper-templates');
 
     let repoUrl: string;
     let urlValid = false;
@@ -59,7 +59,7 @@ export const setupCommand = async () => {
 
       // ----- Test Repository / Get Manifest
 
-      print.fullLine('🔍 Testing repository and looking for manifest.yaml...');
+      print.line('🔍 Testing repository and looking for manifest.yaml...');
 
       const manifest = await fetchOrganizationManifest();
 
@@ -68,13 +68,13 @@ export const setupCommand = async () => {
 
         print.success(`Found manifest!`);
 
-        print.line(`${chalk.whiteBright('Organization')}: ${manifest.name}`);
+        print.line(`${chalk.whiteBright('Organization')}: ${manifest.name}`, false);
 
         if (manifest.description) {
-          print.line(`${chalk.whiteBright('Description')}: ${manifest.description}`);
+          print.line(`${chalk.whiteBright('Description')}: ${manifest.description}`, false);
         }
 
-        print.fullLine(`${chalk.whiteBright('Template Count')}: ${manifest.templates.length}`);
+        print.line(`${chalk.whiteBright('Template Count')}: ${manifest.templates.length}`);
 
         urlValid = true;
       } else {
@@ -106,7 +106,7 @@ export const setupCommand = async () => {
             setOrganizationRepoUrl(undefined);
             urlValid = true;
           } else {
-            print.fullLine('Setup cancelled. Run "stamper setup" to try again.');
+            print.line('Setup cancelled. Run "stamper setup" to try again.');
             return;
           }
         }
@@ -122,9 +122,9 @@ export const setupCommand = async () => {
 
   markSetupCompleted();
 
-  print.fullLine('🎉 Setup completed successfully!');
-  print.line('💡 Next steps:');
-  print.line('   • List templates: stamper list');
-  print.line('   • Add your own template: stamper add <name> <github-url>');
-  print.fullLine('   • Create a project: stamper create');
+  print.line('🎉 Setup completed successfully!');
+  print.line('💡 Next steps:', false);
+  print.line('   • List templates: stamper list', false);
+  print.line('   • Add your own template: stamper add <name> <github-url>', false);
+  print.line('   • Create a project: stamper create');
 };

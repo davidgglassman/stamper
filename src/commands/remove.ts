@@ -32,7 +32,7 @@ export const removeCommand = async (name: string) => {
 
   if (!hasUserTemplate(templateName)) {
     print.error(`User template not found: ${templateName}`);
-    print.fullLine('💡 List available templates with: ');
+    print.line('💡 List available templates with: ');
     console.log('💡 To check available templates: stamper list');
     return;
   }

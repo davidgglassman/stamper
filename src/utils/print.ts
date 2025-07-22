@@ -1,8 +1,10 @@
 export const print = {
-  line: (text: string = '') => console.log(text),
-  fullLine: (text: string = '') => {
+  line: (text: string = '', full: boolean = true) => {
     console.log(text);
-    console.log();
+
+    if (full) {
+      console.log();
+    }
   },
   separator: () => console.log('-'.repeat(50)),
   finish: () => console.log(),

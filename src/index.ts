@@ -149,14 +149,14 @@ if (process.argv.length === 2) {
 
   // ----- Welcome Message
 
-  print.line(chalk.bold(`Welcome to Stamper!`));
-  print.fullLine(chalk.gray(`The Node CLI for rapid project scaffolding from templates.`));
+  print.line(chalk.bold(`Welcome to Stamper!`), false);
+  print.line(chalk.gray(`The Node CLI for rapid project scaffolding from templates.`));
 
   // ----- Setup Hint
 
   if (!isSetupCompleted()) {
-    print.line(chalk.yellow('First-time setup detected...'));
-    print.fullLine('💡 You should run the "setup" command to configure organization templates.');
+    print.line(chalk.yellow('First-time setup detected...'), false);
+    print.line('💡 You should run the "setup" command to configure organization templates.');
   }
 
   // ----- Help Menu

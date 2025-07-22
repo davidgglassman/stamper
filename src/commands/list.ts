@@ -10,16 +10,16 @@ const printTemplateSection = (title: string, subtitle: string = '', templates: T
   if (templates.length > 0) {
     const st: string = subtitle ? `(${subtitle})` : '';
 
-    print.fullLine(`${chalk.bold(title)} ${st}`);
+    print.line(`${chalk.bold(title)} ${st}`);
 
     templates.forEach((template) => {
-      print.line(`   • ${chalk.whiteBright('Name')}: ${template.name}`);
+      print.line(`   • ${chalk.whiteBright('Name')}: ${template.name}`, false);
 
       if (template.description) {
-        print.line(`     ${chalk.whiteBright('Description')}: ${template.description}`);
+        print.line(`     ${chalk.whiteBright('Description')}: ${template.description}`, false);
       }
 
-      print.fullLine(`     ${chalk.whiteBright('URL')}: ${template.url}`);
+      print.line(`     ${chalk.whiteBright('URL')}: ${template.url}`);
     });
   }
 };
@@ -35,9 +35,9 @@ export const listCommand = async () => {
   // ---------- No Templates Found
 
   if (orgTemplates.length === 0 && userTemplates.length === 0) {
-    print.fullLine('📭 No templates available');
-    print.line('💡 Link an organization with templates or add a custom template with:');
-    print.fullLine('      stamper add <name> <github-url>');
+    print.line('📭 No templates available');
+    print.line('💡 Link an organization with templates or add a custom template with:', false);
+    print.line('      stamper add <name> <github-url>');
     return;
   }
 
@@ -45,7 +45,7 @@ export const listCommand = async () => {
 
   // ----- Header
 
-  print.fullLine('📋 Available Templates');
+  print.line('📋 Available Templates');
 
   // ----- Organization Templates Section
 
@@ -59,7 +59,7 @@ export const listCommand = async () => {
 
   const totalCount = orgTemplates.length + userTemplates.length;
 
-  print.fullLine(
+  print.line(
     `${chalk.bold('Total')}: ${totalCount} template${totalCount === 1 ? '' : 's'} available`
   );
 };

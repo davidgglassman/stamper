@@ -51,7 +51,7 @@ export const addCommand = async (name: string, githubUrl: string) => {
   // ---------- Duplicate Handling
 
   if (hasUserTemplate(templateName)) {
-    print.fullLine(`⚠️ User template already exists: ${templateName}. Updating URL...`);
+    print.line(`⚠️ User template already exists: ${templateName}. Updating URL...`);
   }
 
   // ---------- Template Registration
