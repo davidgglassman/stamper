@@ -46,6 +46,7 @@ Run this command when first using Stamper or to reconfigure organization setting
   });
 
 // ---------- Create Command
+
 program
   .command('create')
   .description('Create a new project from a template')
@@ -74,6 +75,7 @@ Examples:
   });
 
 // ---------- List Command
+
 program
   .command('list')
   .description('List available templates (both organization and user)')

@@ -1,44 +1,63 @@
-import { getOrganizationTemplates, getUserTemplates } from '../lib/config.js';
+import chalk from 'chalk';
+import { getOrganizationTemplates, getUserTemplates, Template } from '../lib/config.js';
+import { print } from '../utils/print.js';
+
+// ---------------------- Helpers
+
+const printTemplateSection = (title: string, subtitle: string = '', templates: Template[]) => {
+  if (templates.length > 0) {
+    const st: string = subtitle ? `(${subtitle})` : '';
+
+    print.fullLine(`${chalk.bold(title)} ${st}`);
+
+    templates.forEach((template) => {
+      print.line(`   • ${chalk.whiteBright('Name')}: ${template.name}`);
+
+      if (template.description) {
+        print.line(`     ${chalk.whiteBright('Description')}: ${template.description}`);
+      }
+
+      print.fullLine(`     ${chalk.whiteBright('URL')}: ${template.url}`);
+    });
+  }
+};
+
+// ---------------------- Command Handler
 
 export const listCommand = async () => {
+  // ---------- Get Templates
+
   const orgTemplates = await getOrganizationTemplates();
   const userTemplates = getUserTemplates();
 
+  // ---------- No Templates Found
+
   if (orgTemplates.length === 0 && userTemplates.length === 0) {
-    console.log('📭 No templates available');
-    console.log('');
-    console.log('💡 Add a template with:');
-    console.log('   stamper add <name> <github-url>');
+    print.fullLine('📭 No templates available');
+    print.line('💡 Link an organization with templates or add a custom template with:');
+    print.fullLine('      stamper add <name> <github-url>');
     return;
   }
 
-  console.log('📋 Available Templates');
-  console.log('');
+  // ---------- Display Found Template Information
 
-  if (orgTemplates.length > 0) {
-    console.log('🏢 Organization Templates (read-only):');
-    orgTemplates.forEach((template) => {
-      console.log(`   • ${template.name}`);
-      if (template.description) {
-        console.log(`     ${template.description}`);
-      }
-      console.log(`     ${template.url}`);
-    });
-    console.log('');
-  }
+  // ----- Header
 
-  if (userTemplates.length > 0) {
-    console.log('👤 User Templates:');
-    userTemplates.forEach((template) => {
-      console.log(`   • ${template.name}`);
-      if (template.description) {
-        console.log(`     ${template.description}`);
-      }
-      console.log(`     ${template.url}`);
-    });
-    console.log('');
-  }
+  print.fullLine('📋 Available Templates');
+
+  // ----- Organization Templates Section
+
+  printTemplateSection('Organization', 'read-only', orgTemplates);
+
+  // ----- User Templates Section
+
+  printTemplateSection('User', 'custom', userTemplates);
+
+  // ----- Summary
 
   const totalCount = orgTemplates.length + userTemplates.length;
-  console.log(`Total: ${totalCount} template${totalCount === 1 ? '' : 's'} available`);
+
+  print.fullLine(
+    `${chalk.bold('Total')}: ${totalCount} template${totalCount === 1 ? '' : 's'} available`
+  );
 };
