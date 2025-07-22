@@ -1,38 +1,49 @@
+// ---------------------- Imports
+
 import { getOrganizationTemplates, hasUserTemplate, removeUserTemplate } from '../lib/config.js';
+import { print } from '../utils/print.js';
+
+// ---------------------- Command Handler
 
 export const removeCommand = async (name: string) => {
+  // ---------- Input Validation
+
   if (!name || name.trim().length === 0) {
-    console.error('❌ Error: Template name cannot be empty');
+    print.error('Template name cannot be empty!');
     return;
   }
 
   const templateName = name.trim();
 
-  // Check if this is an organization template
+  // ---------- Protect Organization Templates
+
   const orgTemplates = await getOrganizationTemplates();
   const isOrgTemplate = orgTemplates.some((t) => t.name === templateName);
 
   if (isOrgTemplate) {
-    console.error(`❌ Error: Cannot remove organization template "${templateName}"`);
-    console.error('   Organization templates are read-only and managed by your organization.');
+    print.error(
+      `Cannot remove organization template: ${templateName}`,
+      'Organization templates are read-only and managed by your organization.'
+    );
     return;
   }
 
-  // Check if user template exists
+  // ---------- Confirm User Template Exists
+
   if (!hasUserTemplate(templateName)) {
-    console.error(`❌ Error: User template "${templateName}" not found`);
-    console.log('');
-    console.log('💡 List available templates with:');
-    console.log('   stamper list');
+    print.error(`User template not found: ${templateName}`);
+    print.fullLine('💡 List available templates with: ');
+    console.log('💡 To check available templates: stamper list');
     return;
   }
 
-  // Remove user template
+  // ---------- Remove Template
+
   const removed = removeUserTemplate(templateName);
 
   if (removed) {
-    console.log(`✅ User template "${templateName}" removed successfully!`);
+    print.success(`User template removed successfully: ${templateName}`);
   } else {
-    console.error(`❌ Error: Failed to remove template "${templateName}"`);
+    print.error(`Failed to remove template: ${templateName}`);
   }
 };

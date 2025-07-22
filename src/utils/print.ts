@@ -10,8 +10,12 @@ export const print = {
     console.log(`✅ ${text}`);
     console.log();
   },
-  error: (text: string) => {
+  error: (text: string, subtext?: string) => {
     console.log(`❌ ${text}`);
+
+    if (subtext) {
+      console.log(subtext);
+    }
     console.log();
   },
 };

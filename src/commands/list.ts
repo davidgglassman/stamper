@@ -1,3 +1,5 @@
+// ---------------------- Imports
+
 import chalk from 'chalk';
 import { getOrganizationTemplates, getUserTemplates, Template } from '../lib/config.js';
 import { print } from '../utils/print.js';
