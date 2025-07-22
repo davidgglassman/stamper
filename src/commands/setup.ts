@@ -1,34 +1,45 @@
+// ---------------------- Imports
+
 import { confirm, input } from '@inquirer/prompts';
+import chalk from 'chalk';
 import {
   fetchOrganizationManifest,
   markSetupCompleted,
   setOrganizationRepoUrl,
   validateGitHubRepoUrl,
 } from '../lib/config.js';
+import { print } from '../utils/print.js';
+
+// ---------------------- Command Handler
 
 export const setupCommand = async () => {
-  console.log('🚀 Welcome to Stamper!');
-  console.log('');
-  console.log("Let's set up your template configuration.");
-  console.log('');
+  // ---------- Welcome Messages
 
-  // Ask about organization templates
+  print.fullLine('🚀 Welcome to Stamper!');
+  print.fullLine("Let's set up your template configuration.");
+
+  // ---------- Organization Templates Available
+
   const hasOrganization = await confirm({
     message: 'Does your organization provide template manifests?',
     default: false,
   });
 
   if (hasOrganization) {
-    console.log('');
-    console.log('💡 Your organization should provide a GitHub repository that contains');
-    console.log('   a manifest.yaml file with approved templates. This looks like:');
-    console.log('   https://github.com/yourcompany/stamper-templates');
-    console.log('');
+    // ---------- Organization Setup
+
+    print.line('💡 Your organization should provide a GitHub repository that contains');
+    print.line('   a manifest.yaml file with approved templates. This looks like:');
+    print.fullLine('   https://github.com/yourcompany/stamper-templates');
 
     let repoUrl: string;
     let urlValid = false;
 
+    // ----- Repo URL Validation Loop
+
     do {
+      // ----- Get Repo URL from User
+
       repoUrl = await input({
         message: "Enter your organization's template repository URL:",
         validate: (url: string) => {
@@ -44,31 +55,48 @@ export const setupCommand = async () => {
 
       repoUrl = repoUrl.trim();
 
-      console.log('');
-      console.log('🔍 Testing repository and looking for manifest.yaml...');
-
-      // Test the URL by trying to fetch the manifest
       setOrganizationRepoUrl(repoUrl);
+
+      // ----- Test Repository / Get Manifest
+
+      print.fullLine('🔍 Testing repository and looking for manifest.yaml...');
+
       const manifest = await fetchOrganizationManifest();
 
       if (manifest) {
-        console.log(`✅ Success! Found ${manifest.templates.length} organization template(s)`);
-        console.log(`   Organization: ${manifest.name}`);
+        // ----- Success / Display Manifest Info
+
+        print.success(`Found manifest!`);
+
+        print.line(`${chalk.whiteBright('Organization')}: ${manifest.name}`);
+
         if (manifest.description) {
-          console.log(`   Description: ${manifest.description}`);
+          print.line(`${chalk.whiteBright('Description')}: ${manifest.description}`);
         }
+
+        print.fullLine(`${chalk.whiteBright('Template Count')}: ${manifest.templates.length}`);
+
         urlValid = true;
       } else {
-        console.log('❌ Could not find manifest.yaml in this repository');
-        console.log(
-          '   Make sure the repository contains a manifest.yaml file in the root directory'
+        // ----- Error / No Manifest
+
+        print.error(
+          'Could not find manifest.yaml in this repository',
+          'Make sure the repository contains a manifest.yaml file in the root directory'
         );
+
+        // ----- Retry different repo?
+
         const retry = await confirm({
           message: 'Would you like to try a different repository?',
           default: true,
         });
 
+        // ----- No Retry
+
         if (!retry) {
+          // ----- Continue without org?
+
           const continueWithoutOrg = await confirm({
             message: 'Continue setup without organization templates?',
             default: true,
@@ -78,24 +106,25 @@ export const setupCommand = async () => {
             setOrganizationRepoUrl(undefined);
             urlValid = true;
           } else {
-            console.log('Setup cancelled. Run "stamper setup" to try again.');
+            print.fullLine('Setup cancelled. Run "stamper setup" to try again.');
             return;
           }
         }
       }
     } while (!urlValid);
   } else {
+    // ---------- No Organization
+
     setOrganizationRepoUrl(undefined);
   }
 
+  // ---------- Setup Complete
+
   markSetupCompleted();
 
-  console.log('');
-  console.log('🎉 Setup completed successfully!');
-  console.log('');
-  console.log('💡 Next steps:');
-  console.log('   • List templates: stamper list');
-  console.log('   • Add your own template: stamper add <name> <github-url>');
-  console.log('   • Create a project: stamper create');
-  console.log('');
+  print.fullLine('🎉 Setup completed successfully!');
+  print.line('💡 Next steps:');
+  print.line('   • List templates: stamper list');
+  print.line('   • Add your own template: stamper add <name> <github-url>');
+  print.fullLine('   • Create a project: stamper create');
 };
