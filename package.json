@@ -34,7 +34,7 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "serve": "node ./bin/index.js",
+    "serve": "tsc -b && node ./bin/index.js",
     "build": "eslint . && tsc -b",
     "clean": "rm -rf dist",
     "prepare": "npm run build",
