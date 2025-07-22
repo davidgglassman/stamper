@@ -1,3 +1,5 @@
+// ---------------------- Imports
+
 import { confirm, input, select } from '@inquirer/prompts';
 import chalk from 'chalk';
 import { existsSync } from 'fs';
@@ -8,24 +10,34 @@ import { getAllTemplates, getTemplate } from '../lib/config.js';
 import { GitManager } from '../lib/git.js';
 import { askQuestions, parseTemplateConfig, type AnswerMap } from '../lib/questions.js';
 import { scaffoldTemplate } from '../lib/scaffold.js';
+import { print } from '../utils/print.js';
+
+// ---------------------- Command Handler
 
 export const createCommand = async (options: { outputDir?: string }) => {
   try {
-    // Get all available templates
+    // ---------- Template Availability Check
+
     const templates = await getAllTemplates();
 
+    // ----- No Templates Found
+
     if (templates.length === 0) {
-      console.log(chalk.yellow('📭 No templates available!'));
-      console.log('');
-      console.log('💡 To get started:');
-      console.log('   • Run `stamper setup` to configure organization templates');
-      console.log('   • Run `stamper add <name> <github-url>` to add user templates');
+      print.line(chalk.yellow('📭 No templates available!'));
+
+      print.line('💡 To get started:', false);
+      print.line('   • Run `stamper setup` to configure organization templates', false);
+      print.line('   • Run `stamper add <name> <github-url>` to add user templates');
       return;
     }
 
-    // Template selection
-    console.log(chalk.blue('🎯 Select a template to create your project:'));
-    console.log('');
+    // ---------- Template Selection
+
+    // ----- Header
+
+    print.line(chalk.blue('🎯 Select a template to create your project:'));
+
+    // ----- Template Choices
 
     const templateChoices = templates.map((template) => ({
       name: `${template.name}${template.source === 'organization' ? ' (org)' : ''}`,
@@ -33,19 +45,26 @@ export const createCommand = async (options: { outputDir?: string }) => {
       description: template.description || 'No description provided',
     }));
 
+    // ----- User Prompt
+
     const selectedTemplateName = await select({
       message: 'Choose template:',
       choices: templateChoices,
     });
 
+    // ----- Get Template Details
+
     const selectedTemplate = await getTemplate(selectedTemplateName);
+
     if (!selectedTemplate) {
-      console.error(chalk.red('❌ Template not found'));
+      print.error('Template not found');
       return;
     }
 
-    // Output directory handling
+    // ---------- Output Directory Selection
+
     let outputDir = options.outputDir;
+
     if (!outputDir) {
       outputDir = await input({
         message: 'Output directory:',
@@ -55,62 +74,60 @@ export const createCommand = async (options: { outputDir?: string }) => {
 
     const resolvedOutputDir = resolve(outputDir);
 
-    // Check if output directory exists and is not empty
+    // ----- Validate Output Directory
+
     if (existsSync(resolvedOutputDir)) {
       const { readdir } = await import('fs/promises');
+
       try {
         const files = await readdir(resolvedOutputDir);
+
         if (files.length > 0) {
-          console.log(chalk.yellow('⚠️  Output directory is not empty!'));
-          console.log(`   ${resolvedOutputDir}`);
-          console.log('');
-          console.log('💡 Consider using a new directory or cleaning the existing one');
+          // ----- Not Empty
+
+          print.error(`Output directory is not empty: ${resolvedOutputDir}`);
+          print.line('💡 Consider using a new directory or cleaning the existing one');
+
           return;
         }
       } catch {
-        // Directory exists but can't read it - probably a file, not a directory
-        console.log(chalk.red('❌ Output path exists but is not a directory!'));
-        console.log(`   ${resolvedOutputDir}`);
+        // ----- Not a Directory
+
+        print.error(`Output path exists but is not a directory: ${resolvedOutputDir}`);
+
         return;
       }
     }
 
-    console.log('');
-    console.log(chalk.blue('🚀 Creating project from template...'));
-    console.log(`   Template: ${chalk.bold(selectedTemplate.name)}`);
-    console.log(`   Source: ${selectedTemplate.url}`);
-    console.log(`   Output: ${resolvedOutputDir}`);
-    console.log('');
+    print.line(`${chalk.bold('Creating project from template...')}`);
+    print.line(`   • ${chalk.whiteBright('Template')}: ${selectedTemplate.name}`, false);
+    print.line(`   • ${chalk.whiteBright('Source')}: ${selectedTemplate.url}`, false);
+    print.line(`   • ${chalk.whiteBright('Output')}: ${resolvedOutputDir}`);
 
-    // Clone template using GitManager
+    // ---------- Clone Template
+
     const gitManager = new GitManager();
     const spinner = ora('Preparing to clone template...').start();
 
     try {
       const cloneDir = await gitManager.cloneTemplate(selectedTemplate.url, spinner);
+
       spinner.succeed('Template repository cloned successfully');
 
-      // Show what was cloned
+      // ----- Check for Manifest File
+
       const { readdir } = await import('fs/promises');
       const files = await readdir(cloneDir, { withFileTypes: true });
 
-      console.log('');
-      console.log(chalk.green('📁 Template contents:'));
-      files.forEach((file) => {
-        const icon = file.isDirectory() ? '📂' : '📄';
-        console.log(`   ${icon} ${file.name}`);
-      });
-
-      // Check for stamper.yaml and process questions
       const hasStamperYaml = files.some((file) => file.name === 'stamper.yaml');
       let userAnswers: AnswerMap = {};
 
-      console.log('');
       if (hasStamperYaml) {
-        console.log(chalk.green('✅ stamper.yaml configuration found'));
+        print.success('stamper.yaml configuration found');
 
         try {
-          // Read and parse stamper.yaml
+          // ----- Parse Manifest File
+
           const { readFile } = await import('fs/promises');
           const stamperYamlPath = resolve(cloneDir, 'stamper.yaml');
           const yamlContent = await readFile(stamperYamlPath, 'utf-8');
@@ -118,68 +135,81 @@ export const createCommand = async (options: { outputDir?: string }) => {
           const templateConfig = parseTemplateConfig(parsedYaml);
 
           if (templateConfig.questions.length > 0) {
-            console.log('');
-            console.log(chalk.blue('📝 Template configuration:'));
-            console.log(`   ${chalk.bold(templateConfig.name)}`);
-            console.log(`   ${templateConfig.description}`);
-            console.log('');
-            console.log(chalk.blue('🤔 Please answer the following questions:'));
-            console.log('');
+            // ----- Handle Questions
+
+            print.line(`${chalk.bold('Template configuration')}`);
+            print.line(`   • ${chalk.whiteBright('Name')}: ${templateConfig.name}`, false);
+            print.line(`   • ${chalk.whiteBright('Description')}: ${templateConfig.description}`);
+
+            print.line(chalk.blue('Please answer the following questions:'));
 
             userAnswers = await askQuestions(templateConfig.questions);
 
-            console.log('');
-            console.log(chalk.green('✅ Questions completed!'));
-            console.log('');
-            console.log(chalk.blue('📊 Your answers:'));
+            print.success('Questions completed!');
+
+            print.line(`${chalk.bold('Your Answers')}`);
+
             for (const [key, value] of Object.entries(userAnswers)) {
-              console.log(`   ${chalk.bold(key)}: ${value}`);
+              print.line(`   • ${chalk.whiteBright(key)}: ${value}`);
             }
           } else {
-            console.log(chalk.yellow('   No questions defined in template'));
+            // ----- No Questions Defined
+
+            print.line(chalk.yellow('No questions defined in template'));
           }
         } catch (error) {
-          console.log(chalk.red('❌ Error processing stamper.yaml:'));
-          console.log(`   ${error instanceof Error ? error.message : 'Unknown error'}`);
-          console.log('   Continuing without template questions...');
+          // ----- Error Parsing Manifest File
+
+          print.error(
+            'Error processing stamper.yaml',
+            `${error instanceof Error ? error.message : 'Unknown error'}`
+          );
+          print.line('Continuing without template questions...');
         }
       } else {
-        console.log(chalk.yellow('⚠️  No stamper.yaml found - using default configuration'));
+        // ----- No Manifest File Found
+
+        print.line(chalk.yellow('⚠️ No stamper.yaml found - using default configuration'));
       }
 
-      // Scaffold template with Nunjucks processing
-      console.log('');
+      // ---------- Scaffold with Nunjucks Engine
+
       const scaffoldSpinner = ora('Initializing template processing...').start();
+
       await scaffoldTemplate({
         sourceDir: cloneDir,
         outputDir: resolvedOutputDir,
         variables: userAnswers,
         progressSpinner: scaffoldSpinner,
       });
+
       scaffoldSpinner.succeed('All template files processed successfully');
 
-      // Clean up stamper.yaml from output directory if it exists
+      // ---------- Delete Manifest File
+
       if (hasStamperYaml) {
         const cleanupSpinner = ora('Cleaning up template configuration...').start();
+
         try {
           const { unlink } = await import('fs/promises');
           const stamperYamlOutputPath = resolve(resolvedOutputDir, 'stamper.yaml');
+
           await unlink(stamperYamlOutputPath);
+
           cleanupSpinner.succeed('Template configuration removed');
         } catch {
           cleanupSpinner.warn('Could not remove stamper.yaml from output directory');
-          // Non-fatal error, continue execution
         }
       }
 
-      // Git repository initialization prompt
+      // ---------- Initialize Git Repo
+
       let gitInitialized = false;
       const gitAvailable = await gitManager.isGitAvailable();
       const isAlreadyGitRepo = await gitManager.isGitRepository(resolvedOutputDir);
 
       if (gitAvailable && !isAlreadyGitRepo) {
-        console.log('');
-        console.log(chalk.blue('🔧 Git Repository Setup'));
+        print.line(chalk.blue('🔧 Git Repository Setup'));
 
         const shouldInitGit = await confirm({
           message: 'Initialize a git repository for this project?',
@@ -188,161 +218,140 @@ export const createCommand = async (options: { outputDir?: string }) => {
 
         if (shouldInitGit) {
           const gitSpinner = ora('Setting up git repository...').start();
+
           try {
             await gitManager.initializeRepository(resolvedOutputDir, gitSpinner);
+
             gitSpinner.succeed('Git repository initialized with initial commit');
+
             gitInitialized = true;
           } catch (error) {
-            // gitSpinner.fail called inside initializeRepository
-            console.log(chalk.yellow('⚠️  Git initialization skipped'));
+            print.line(chalk.yellow('⚠️ Git initialization skipped'));
+
             if (error instanceof Error) {
-              console.log(`   ${error.message.split('\n')[0]}`);
+              print.error(`${error.message.split('\n')[0]}`);
             }
           }
         } else {
-          console.log(chalk.gray('   Git initialization skipped by user'));
+          // ----- Repo Init skipped by user
+
+          print.line(chalk.gray('Git initialization skipped by user'));
         }
       } else if (!gitAvailable) {
-        console.log('');
-        console.log(chalk.yellow('⚠️  Git not available - repository initialization skipped'));
-        console.log('   Install Git to enable automatic repository setup');
+        // ----- Git Unavailable
+
+        print.line(chalk.yellow('⚠️ Git not available - repository initialization skipped'));
+        print.line('Install Git to enable automatic repository setup');
       } else if (isAlreadyGitRepo) {
-        console.log('');
-        console.log(chalk.blue('ℹ️  Directory is already a git repository'));
-        gitInitialized = true; // Consider it as initialized
+        // ----- Repo already exists
+
+        print.line(chalk.blue('ℹ️  Directory is already a git repository'));
+
+        gitInitialized = true;
       }
 
-      // Enhanced success messaging with next steps
-      console.log('');
-      console.log(chalk.green.bold('🎉 Project created successfully!'));
-      console.log('');
-      console.log(chalk.blue('📍 Project Details:'));
-      console.log(`   ${chalk.bold('Name:')} ${userAnswers.project_name || 'Generated Project'}`);
-      console.log(`   ${chalk.bold('Location:')} ${chalk.underline(resolvedOutputDir)}`);
-      console.log(`   ${chalk.bold('Template:')} ${selectedTemplate.name}`);
+      // ---------- Success / Summary Messaging
+
+      print.success('Project created successfully!');
+
+      print.line(`${chalk.bold('Project Details')}`);
+      print.line(
+        `   • ${chalk.whiteBright('Name')}: ${userAnswers.project_name || 'Generated Project'}`,
+        false
+      );
+      print.line(
+        `   • ${chalk.whiteBright('Location')}: ${chalk.underline(resolvedOutputDir)}`,
+        false
+      );
+      print.line(`   • ${chalk.whiteBright('Template')}: ${selectedTemplate.name}`, false);
 
       if (Object.keys(userAnswers).length > 0) {
-        console.log(
-          `   ${chalk.bold('Customizations:')} ${Object.keys(userAnswers).length} options configured`
+        print.line(
+          `   • ${chalk.whiteBright('Customizations')}: ${Object.keys(userAnswers).length} options configured`,
+          false
         );
       }
 
-      console.log('');
-      console.log(chalk.green('✅ What was completed:'));
-      console.log('   • Template repository cloned');
-      console.log('   • Configuration questions answered');
-      console.log('   • Variables applied to templates');
-      console.log('   • Project files generated');
-      console.log('   • Development environment ready');
+      print.line();
+
+      print.line(`${chalk.bold('What was completed')}`);
+      print.line(`   • Template repository cloned`, false);
+      print.line(`   • Configuration questions answered`, false);
+      print.line(`   • Variables applied to templates`, false);
+      print.line(`   • Project files generated`, false);
+
       if (gitInitialized) {
-        console.log('   • Git repository initialized with initial commit');
+        print.line(`   • Git repository initialized with initial commit`, false);
       }
 
-      console.log('');
-      console.log(chalk.blue('🚀 Next steps:'));
-      console.log(
-        `   1. ${chalk.bold('cd')} ${resolvedOutputDir.split('/').pop() || resolvedOutputDir}`
-      );
-      console.log('   2. Install dependencies: ' + chalk.bold('npm install'));
+      print.line();
 
-      // Add template-specific next steps
-      if (selectedTemplate.name.toLowerCase().includes('react')) {
-        const port = userAnswers.port_number || 3000;
-        console.log(`   3. Start development: ${chalk.bold(`npm run dev`)} (port ${port})`);
-        if (userAnswers.include_testing) {
-          console.log(`   4. Run tests: ${chalk.bold('npm test')}`);
-        }
-      } else if (selectedTemplate.name.toLowerCase().includes('svelte')) {
-        console.log(`   3. Start development: ${chalk.bold('npm run dev')}`);
-        if (userAnswers.include_pwa) {
-          console.log(`   4. Build PWA: ${chalk.bold('npm run build')}`);
-        }
-      } else {
-        console.log(`   3. Start development: ${chalk.bold('npm run dev')}`);
-      }
-
-      // Check for environment file
-      const { existsSync } = await import('fs');
-      const envExamplePath = resolve(resolvedOutputDir, '.env.example');
-      if (existsSync(envExamplePath)) {
-        console.log('');
-        console.log(chalk.yellow('⚠️  Environment setup required:'));
-        console.log(`   • Copy ${chalk.bold('.env.example')} to ${chalk.bold('.env')}`);
-        console.log('   • Configure your environment variables');
-      }
-
-      // Git-related next steps
       if (gitInitialized) {
-        console.log('');
-        console.log(chalk.blue('📦 Git repository ready:'));
-        console.log(`   • Initial commit created`);
-        console.log(`   • Add remote: ${chalk.bold('git remote add origin <your-repo-url>')}`);
-        console.log(`   • Push to remote: ${chalk.bold('git push -u origin main')}`);
-      } else if (gitAvailable && !isAlreadyGitRepo) {
-        console.log('');
-        console.log(chalk.gray('💡 To initialize git later:'));
-        console.log(`   • ${chalk.bold('git init')}`);
-        console.log(`   • ${chalk.bold('git add .')}`);
-        console.log(`   • ${chalk.bold('git commit -m "Initial commit"')}`);
+        print.line(`${chalk.bold('Git repository ready')}`);
+
+        print.line(`   • Initial commit created`, false);
+        print.line(
+          `   • Add remote: ${chalk.bold('git remote add origin <your-repo-url>')}`,
+          false
+        );
+        print.line(`   • Push to remote: ${chalk.bold('git push -u origin main')}`);
       }
 
-      console.log('');
-      console.log(chalk.green('Happy coding! 🚀'));
+      print.line(chalk.green('Happy coding! 🚀'));
     } catch (error) {
-      // Enhanced error handling with helpful suggestions
-      console.log('');
-      console.error(chalk.red.bold('❌ Project creation failed'));
-      console.log('');
+      // ---------- Failure / Error Messaging
+
+      print.error('Project creation failed');
 
       if (error instanceof Error) {
-        // Parse error message for better formatting
         const errorLines = error.message.split('\n');
-        console.error(chalk.red('💥 Error details:'));
+
+        print.line(`${chalk.bold('Error Details')}`);
+
         errorLines.forEach((line) => {
-          console.error(`   ${line}`);
+          print.line(`   • ${line}`, false);
         });
 
-        console.log('');
-        console.error(chalk.yellow('💡 Troubleshooting suggestions:'));
+        print.line();
+
+        print.line(`${chalk.bold('Troubleshooting Suggestions')}`);
 
         if (error.message.includes('Repository not found') || error.message.includes('not found')) {
-          console.error('   • Verify the repository URL is correct');
-          console.error('   • Check that the repository exists and is public');
-          console.error('   • Ensure you have internet connectivity');
+          print.line(`   • Verify the repository URL is correct`, false);
+          print.line(`   • Check that the repository exists and is public`, false);
+          print.line('   • Ensure you have internet connectivity', false);
         } else if (
           error.message.includes('Access denied') ||
           error.message.includes('Permission denied')
         ) {
-          console.error('   • Check that the repository is public');
-          console.error('   • Verify your GitHub access if using private repositories');
+          print.line('   • Check that the repository is public', false);
+          print.line('   • Verify your GitHub access if using private repositories', false);
         } else if (error.message.includes('network') || error.message.includes('connection')) {
-          console.error('   • Check your internet connection');
-          console.error('   • Try again in a few moments');
-          console.error('   • Verify the repository URL is accessible');
+          print.line('   • Check your internet connection', false);
+          print.line('   • Try again in a few moments', false);
+          print.line('   • Verify the repository URL is accessible', false);
         } else if (error.message.includes('Template processing failed')) {
-          console.error('   • Check the template files for syntax errors');
-          console.error('   • Verify all required variables are defined');
-          console.error('   • Review the stamper.yaml configuration');
+          print.line('   • Check the template files for syntax errors', false);
+          print.line('   • Verify all required variables are defined', false);
+          print.line('   • Review the stamper.yaml configuration', false);
         } else if (error.message.includes('Output directory')) {
-          console.error('   • Choose a different output directory');
-          console.error('   • Ensure you have write permissions');
-          console.error('   • Clear the existing directory if needed');
+          print.line('   • Choose a different output directory', false);
+          print.line('   • Ensure you have write permissions', false);
+          print.line('   • Clear the existing directory if needed', false);
         } else {
-          console.error('   • Try running the command again');
-          console.error('   • Check the template repository is valid');
-          console.error('   • Ensure sufficient disk space is available');
+          print.line('   • Try running the command again', false);
+          print.line('   • Check the template repository is valid', false);
+          print.line('   • Ensure sufficient disk space is available', false);
         }
 
-        console.log('');
-        console.error(chalk.gray('If the problem persists, please report it at:'));
-        console.error(chalk.gray('https://github.com/your-org/stamper/issues'));
+        print.line();
       } else {
-        console.error(chalk.red('   Unknown error occurred'));
+        print.error('   • No suggestions. Unknown error occurred');
       }
 
       process.exit(1);
     } finally {
-      // Always cleanup, even on error
+      // ---------- Clean Up
       try {
         await gitManager.cleanup();
       } catch {
@@ -350,9 +359,10 @@ export const createCommand = async (options: { outputDir?: string }) => {
       }
     }
   } catch (error) {
-    // Fallback error handler for unexpected errors
-    console.error(chalk.red('❌ Unexpected error creating project:'));
-    console.error(`   ${error instanceof Error ? error.message : 'Unknown error'}`);
+    // ---------- Fallback Handler
+    print.error('Unexpected error creating project');
+    print.error(`${error instanceof Error ? error.message : 'Unknown error'}`);
+
     process.exit(1);
   }
 };
