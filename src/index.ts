@@ -22,7 +22,7 @@ getUserTemplates();
 
 const program = new Command();
 
-// ---------- Program Name, Description and Version
+// ---------- Program Name and Version
 
 program.name('stamper').version('1.0.0');
 
