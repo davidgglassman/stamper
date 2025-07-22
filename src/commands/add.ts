@@ -1,50 +1,62 @@
+// ---------------------- Imports
+
 import { addUserTemplate, getOrganizationTemplates, hasUserTemplate } from '../lib/config.js';
+import { print } from '../utils/print.js';
+
+// ---------------------- Helpers
 
 const isValidGitHubUrl = (url: string): boolean => {
   try {
     const parsedUrl = new URL(url);
+
     return parsedUrl.hostname === 'github.com' && parsedUrl.pathname.split('/').length >= 3;
   } catch {
     return false;
   }
 };
 
+// ---------------------- Command Handler
+
 export const addCommand = async (name: string, githubUrl: string) => {
-  // Validate template name
+  // ---------- Input Validation
+
   if (!name || name.trim().length === 0) {
-    console.error('❌ Error: Template name cannot be empty');
+    print.error('Template name cannot be empty!');
+    return;
+  }
+
+  if (!isValidGitHubUrl(githubUrl)) {
+    print.error(
+      'Invalid GitHub URL!',
+      'URL must be a valid GitHub repository (e.g., https://github.com/user/repo)'
+    );
     return;
   }
 
   const templateName = name.trim();
 
-  // Validate GitHub URL
-  if (!isValidGitHubUrl(githubUrl)) {
-    console.error('❌ Error: Invalid GitHub URL');
-    console.error('   URL must be a valid GitHub repository (e.g., https://github.com/user/repo)');
-    return;
-  }
+  // ---------- Protect Organization Templates
 
-  // Check if this conflicts with an organization template
   const orgTemplates = await getOrganizationTemplates();
   const conflictsWithOrg = orgTemplates.some((t) => t.name === templateName);
 
   if (conflictsWithOrg) {
-    console.error(`❌ Error: Template name "${templateName}" is reserved by your organization`);
-    console.error(
-      '   Organization templates cannot be overridden. Please choose a different name.'
+    print.error(
+      `Template is reserved by your organization: ${templateName}`,
+      'Organization templates cannot be overridden. Please choose a different name.'
     );
     return;
   }
 
-  // Check for duplicate user template
+  // ---------- Duplicate Handling
+
   if (hasUserTemplate(templateName)) {
-    console.log(`⚠️  User template "${templateName}" already exists. Updating URL...`);
+    print.fullLine(`⚠️ User template already exists: ${templateName}. Updating URL...`);
   }
 
-  // Add template to user templates
+  // ---------- Template Registration
+
   addUserTemplate({ name: templateName, url: githubUrl });
 
-  console.log(`✅ User template "${templateName}" added successfully!`);
-  console.log(`   URL: ${githubUrl}`);
+  print.success(`User template added successfully: ${templateName} | ${githubUrl}`);
 };
