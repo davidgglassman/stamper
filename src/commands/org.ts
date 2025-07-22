@@ -1,4 +1,7 @@
+// ---------------------- Imports
+
 import { confirm, input } from '@inquirer/prompts';
+import chalk from 'chalk';
 import {
   fetchOrganizationManifest,
   getOrganizationRepoUrl,
@@ -7,34 +10,39 @@ import {
   setOrganizationRepoUrl,
   validateGitHubRepoUrl,
 } from '../lib/config.js';
+import { print } from '../utils/print.js';
+
+// ---------------------- Command Handler
+
+// ---------- No Sub-Command
 
 export const orgCommand = async (action?: string) => {
   if (!action) {
-    // Show current organization status
+    // ---------- Display Saved Configuration Details
+
     const currentUrl = getOrganizationRepoUrl();
 
     if (currentUrl) {
-      console.log('🏢 Organization Configuration');
-      console.log('');
-      console.log(`Repository URL: ${currentUrl}`);
-
       const orgTemplates = await getOrganizationTemplates();
-      console.log(`Templates: ${orgTemplates.length} available`);
+
+      print.line(`${chalk.bold('Organization Configuration')}`);
+      print.line(`   • ${chalk.whiteBright('Repository URL')}: ${currentUrl}`, false);
+      print.line(`   • ${chalk.whiteBright('Templates')}: ${orgTemplates.length} available`, false);
 
       if (orgTemplates.length > 0) {
-        console.log('');
         orgTemplates.forEach((template) => {
-          console.log(`   • ${template.name}`);
+          print.line(`   • ${chalk.whiteBright('Repository URL')}: ${template.name}`, false);
         });
       }
     } else {
-      console.log('📭 No organization configuration found');
-      console.log('');
-      console.log('💡 Set up organization templates with:');
-      console.log('   stamper org set-url');
+      print.line('No organization configuration found');
+      print.line('💡 Set up organization templates with: stamper org set-url');
     }
+
     return;
   }
+
+  // ---------- Sub-Command Routing
 
   switch (action) {
     case 'set-url':
@@ -47,26 +55,32 @@ export const orgCommand = async (action?: string) => {
       await clearCommand();
       break;
     default:
-      console.error('❌ Unknown organization command');
-      console.log('');
-      console.log('Available commands:');
-      console.log('   stamper org          - Show current organization configuration');
-      console.log('   stamper org set-url  - Set organization repository URL');
-      console.log('   stamper org refresh  - Refresh organization templates');
-      console.log('   stamper org clear    - Remove organization configuration');
+      print.error('Unknown organization command');
+
+      print.line(`${chalk.bold('Available commands')}`, false);
+      print.line('   stamper org          - Show current organization configuration', false);
+      print.line('   stamper org set-url  - Set organization repository URL', false);
+      print.line('   stamper org refresh  - Refresh organization templates', false);
+      print.line('   stamper org clear    - Remove organization configuration');
   }
 };
 
+// ---------------------- Sub-Command Handlers
+
+// ---------- Set URL Sub-Command
+
 const setUrlCommand = async () => {
+  // ---------- Display Saved Configuration Details
+
   const currentUrl = getOrganizationRepoUrl();
 
-  console.log('🔧 Update Organization Repository URL');
-  console.log('');
+  print.line('🔧 Update Organization Repository URL');
 
   if (currentUrl) {
-    console.log(`Current repository: ${currentUrl}`);
-    console.log('');
+    print.line(`Current repository: ${currentUrl}`);
   }
+
+  // ----- Get Repo URL from User
 
   const repoUrl = await input({
     message: 'Enter organization repository URL:',
@@ -75,71 +89,100 @@ const setUrlCommand = async () => {
       if (!url.trim()) {
         return 'URL cannot be empty';
       }
+
       if (!validateGitHubRepoUrl(url.trim())) {
         return 'Please enter a valid GitHub repository URL (e.g., https://github.com/owner/repo)';
       }
+
       return true;
     },
   });
 
-  console.log('');
-  console.log('🔍 Testing repository and looking for manifest.yaml...');
-
   setOrganizationRepoUrl(repoUrl.trim());
+
+  // ----- Test Repository / Get Manifest
+
+  print.line('🔍 Testing repository and looking for manifest.yaml...');
+
   const manifest = await fetchOrganizationManifest();
 
   if (manifest) {
-    console.log(`✅ Success! Found ${manifest.templates.length} organization template(s)`);
-    console.log(`   Organization: ${manifest.name}`);
+    // ----- Success / Display Manifest Info
+
+    print.success(`Found manifest!`);
+
+    print.line(`${chalk.whiteBright('Organization')}: ${manifest.name}`, false);
+
     if (manifest.description) {
-      console.log(`   Description: ${manifest.description}`);
+      print.line(`${chalk.whiteBright('Description')}: ${manifest.description}`, false);
     }
+
+    print.line(`${chalk.whiteBright('Template Count')}: ${manifest.templates.length}`);
   } else {
-    console.log('❌ Could not find manifest.yaml in this repository');
-    console.log('   Make sure the repository contains a manifest.yaml file in the root directory');
-    console.log('   The URL has been saved but templates may not be available');
+    // ----- Error / No Manifest
+
+    print.error(
+      'Could not find manifest.yaml in this repository',
+      'Make sure the repository contains a manifest.yaml file in the root directory'
+    );
+
+    print.line('The URL has been saved but templates may not be available');
   }
 };
 
+// ---------- Refresh Sub-Command
+
 const refreshCommand = async () => {
+  // ---------- Validate Configuration
+
   const currentUrl = getOrganizationRepoUrl();
 
   if (!currentUrl) {
-    console.error('❌ No organization repository URL configured');
-    console.log('');
-    console.log('💡 Set up organization templates with:');
-    console.log('   stamper org set-url');
+    print.error('No organization repository URL configured');
+    print.line('💡 Set up organization templates with: stamper org set-url');
+
     return;
   }
 
-  console.log('🔄 Refreshing organization templates...');
-  console.log(`   Repository: ${currentUrl}`);
-  console.log('');
+  // ----- Perform Refresh
+
+  print.line('Refreshing organization templates...', false);
+  print.line(`Repository: ${currentUrl}`);
 
   const success = await refreshOrganizationManifest();
 
   if (success) {
+    // ----- Success
+
     const orgTemplates = await getOrganizationTemplates();
-    console.log(`✅ Successfully refreshed ${orgTemplates.length} organization template(s)`);
+
+    print.success(`Successfully refreshed ${orgTemplates.length} organization template(s)`);
   } else {
-    console.log('❌ Failed to refresh organization templates');
-    console.log('   Check your internet connection and repository URL');
-    console.log('   Make sure the repository contains a manifest.yaml file');
+    // ----- Error
+
+    print.error('Failed to refresh organization templates');
+
+    print.line('Check your internet connection and repository URL', false);
+    print.line('Make sure the repository contains a manifest.yaml file');
   }
 };
 
+// ---------- Clear Sub-Command
+
 const clearCommand = async () => {
+  // ---------- Validate Configuration
+
   const currentUrl = getOrganizationRepoUrl();
 
   if (!currentUrl) {
-    console.log('📭 No organization configuration to clear');
+    print.line('📭 No organization configuration to clear');
     return;
   }
 
-  console.log('⚠️  Remove Organization Configuration');
-  console.log('');
-  console.log(`Current repository: ${currentUrl}`);
-  console.log('');
+  // ----- Confirm / Perform Clear
+
+  print.line('⚠️ Remove Organization Configuration');
+  print.line(`Current repository: ${currentUrl}`);
 
   const confirmed = await confirm({
     message: 'Are you sure you want to remove organization configuration?',
@@ -147,12 +190,15 @@ const clearCommand = async () => {
   });
 
   if (confirmed) {
+    // ----- Proceed
+
     setOrganizationRepoUrl(undefined);
-    console.log('✅ Organization configuration removed');
-    console.log('');
-    console.log('💡 You can set it up again with:');
-    console.log('   stamper org set-url');
+
+    print.success('Organization configuration removed');
+    print.line('💡 You can set it up again with: stamper org set-url');
   } else {
-    console.log('Cancelled');
+    // ----- Cancel
+
+    print.line('Cancelled');
   }
 };
