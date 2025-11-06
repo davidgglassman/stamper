@@ -38,7 +38,9 @@
     "build": "eslint . && tsc -b",
     "clean": "rm -rf dist",
     "prepare": "npm run build",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "format:check": "prettier --check .",
+    "format": "prettier --write ."
   },
   "dependencies": {
     "@inquirer/prompts": "^7.6.0",

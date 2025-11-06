@@ -6,7 +6,7 @@ import {
   fetchOrganizationManifest,
   markSetupCompleted,
   setOrganizationRepoUrl,
-  validateGitHubRepoUrl,
+  validateGitHubRepoUrl
 } from '../lib/config.js';
 import { print } from '../utils/print.js';
 
@@ -22,7 +22,7 @@ export const setupCommand = async () => {
 
   const hasOrganization = await confirm({
     message: 'Does your organization provide template manifests?',
-    default: false,
+    default: false
   });
 
   if (hasOrganization) {
@@ -50,7 +50,7 @@ export const setupCommand = async () => {
             return 'Please enter a valid GitHub repository URL (e.g., https://github.com/owner/repo)';
           }
           return true;
-        },
+        }
       });
 
       repoUrl = repoUrl.trim();
@@ -89,7 +89,7 @@ export const setupCommand = async () => {
 
         const retry = await confirm({
           message: 'Would you like to try a different repository?',
-          default: true,
+          default: true
         });
 
         // ----- No Retry
@@ -99,7 +99,7 @@ export const setupCommand = async () => {
 
           const continueWithoutOrg = await confirm({
             message: 'Continue setup without organization templates?',
-            default: true,
+            default: true
           });
 
           if (continueWithoutOrg) {

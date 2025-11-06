@@ -86,7 +86,7 @@ const tryFetchFromBranches = async (
 };
 
 const defaultConfig: StamperConfig = {
-  userTemplates: [],
+  userTemplates: []
 };
 
 let config: Conf<StamperConfig>;
@@ -95,7 +95,7 @@ let configError: string | null = null;
 try {
   config = new Conf<StamperConfig>({
     projectName: 'stamper',
-    defaults: defaultConfig,
+    defaults: defaultConfig
   });
 } catch (error) {
   const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -174,7 +174,7 @@ export const getOrganizationTemplates = async (): Promise<OrganizationTemplate[]
     return manifest.templates.map((template) => ({
       ...template,
       readonly: true as const,
-      source: 'organization' as const,
+      source: 'organization' as const
     }));
   } catch {
     return [];
@@ -203,7 +203,7 @@ export const addUserTemplate = (template: Omit<UserTemplate, 'source'>): void =>
 
     const newTemplate: UserTemplate = {
       ...template,
-      source: 'user',
+      source: 'user'
     };
 
     if (existingIndex >= 0) {

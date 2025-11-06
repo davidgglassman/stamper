@@ -42,14 +42,14 @@ export const createCommand = async (options: { outputDir?: string }) => {
     const templateChoices = templates.map((template) => ({
       name: `${template.name}${template.source === 'organization' ? ' (org)' : ''}`,
       value: template.name,
-      description: template.description || 'No description provided',
+      description: template.description || 'No description provided'
     }));
 
     // ----- User Prompt
 
     const selectedTemplateName = await select({
       message: 'Choose template:',
-      choices: templateChoices,
+      choices: templateChoices
     });
 
     // ----- Get Template Details
@@ -68,7 +68,7 @@ export const createCommand = async (options: { outputDir?: string }) => {
     if (!outputDir) {
       outputDir = await input({
         message: 'Output directory:',
-        default: '.',
+        default: '.'
       });
     }
 
@@ -180,7 +180,7 @@ export const createCommand = async (options: { outputDir?: string }) => {
         sourceDir: cloneDir,
         outputDir: resolvedOutputDir,
         variables: userAnswers,
-        progressSpinner: scaffoldSpinner,
+        progressSpinner: scaffoldSpinner
       });
 
       scaffoldSpinner.succeed('All template files processed successfully');
@@ -213,7 +213,7 @@ export const createCommand = async (options: { outputDir?: string }) => {
 
         const shouldInitGit = await confirm({
           message: 'Initialize a git repository for this project?',
-          default: true,
+          default: true
         });
 
         if (shouldInitGit) {

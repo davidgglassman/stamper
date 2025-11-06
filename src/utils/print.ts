@@ -19,5 +19,5 @@ export const print = {
       console.log(subtext);
     }
     console.log();
-  },
+  }
 };

@@ -27,14 +27,14 @@ export const askQuestions = async (questions: TemplateQuestion[]): Promise<Answe
         case 'input':
           answers[question.name] = await input({
             message: question.message,
-            default: typeof question.default === 'string' ? question.default : undefined,
+            default: typeof question.default === 'string' ? question.default : undefined
           });
           break;
 
         case 'confirm':
           answers[question.name] = await confirm({
             message: question.message,
-            default: typeof question.default === 'boolean' ? question.default : false,
+            default: typeof question.default === 'boolean' ? question.default : false
           });
           break;
 
@@ -42,28 +42,28 @@ export const askQuestions = async (questions: TemplateQuestion[]): Promise<Answe
           answers[question.name] = await select({
             message: question.message,
             choices: question.choices?.map((choice) => ({ name: choice, value: choice })) || [],
-            default: typeof question.default === 'string' ? question.default : undefined,
+            default: typeof question.default === 'string' ? question.default : undefined
           });
           break;
 
         case 'checkbox':
           answers[question.name] = await checkbox({
             message: question.message,
-            choices: question.choices?.map((choice) => ({ name: choice, value: choice })) || [],
+            choices: question.choices?.map((choice) => ({ name: choice, value: choice })) || []
             // checkbox doesn't support default in @inquirer/prompts v7
           });
           break;
 
         case 'password':
           answers[question.name] = await password({
-            message: question.message,
+            message: question.message
           });
           break;
 
         case 'number': {
           const numberResult = await number({
             message: question.message,
-            default: typeof question.default === 'number' ? question.default : undefined,
+            default: typeof question.default === 'number' ? question.default : undefined
           });
           answers[question.name] = numberResult ?? 0;
           break;
@@ -72,7 +72,7 @@ export const askQuestions = async (questions: TemplateQuestion[]): Promise<Answe
         case 'rawlist':
           answers[question.name] = await rawlist({
             message: question.message,
-            choices: question.choices?.map((choice) => ({ name: choice, value: choice })) || [],
+            choices: question.choices?.map((choice) => ({ name: choice, value: choice })) || []
             // rawlist doesn't support default in @inquirer/prompts v7
           });
           break;
@@ -152,7 +152,7 @@ export const parseTemplateConfig = (yamlContent: unknown): TemplateConfig => {
         | 'password'
         | 'number'
         | 'rawlist',
-      message: question.message,
+      message: question.message
     };
 
     // Add optional default value
@@ -205,6 +205,6 @@ export const parseTemplateConfig = (yamlContent: unknown): TemplateConfig => {
   return {
     name: content.name,
     description: content.description,
-    questions,
+    questions
   };
 };

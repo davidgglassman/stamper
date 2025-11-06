@@ -8,7 +8,7 @@ import {
   getOrganizationTemplates,
   refreshOrganizationManifest,
   setOrganizationRepoUrl,
-  validateGitHubRepoUrl,
+  validateGitHubRepoUrl
 } from '../lib/config.js';
 import { print } from '../utils/print.js';
 
@@ -95,7 +95,7 @@ const setUrlCommand = async () => {
       }
 
       return true;
-    },
+    }
   });
 
   setOrganizationRepoUrl(repoUrl.trim());
@@ -186,7 +186,7 @@ const clearCommand = async () => {
 
   const confirmed = await confirm({
     message: 'Are you sure you want to remove organization configuration?',
-    default: false,
+    default: false
   });
 
   if (confirmed) {

@@ -143,7 +143,7 @@ if (process.argv.length === 2) {
     figlet.textSync('STAMPER', {
       font: 'Big',
       horizontalLayout: 'default',
-      verticalLayout: 'default',
+      verticalLayout: 'default'
     })
   );
 
